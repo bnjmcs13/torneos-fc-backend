@@ -1,0 +1,1275 @@
+{
+    "FC-DC08": {
+        "id": "T-1778127680417",
+        "name": "Torneo LIGA - 7/5/2026",
+        "format": "liga",
+        "knockoutFormat": "single",
+        "participants": [
+            "Seba",
+            "Mateo",
+            "Diego",
+            "Benja"
+        ],
+        "groups": [
+            {
+                "id": 0,
+                "name": "Grupo A",
+                "teams": [
+                    {
+                        "id": 0,
+                        "name": "Seba"
+                    },
+                    {
+                        "id": 1,
+                        "name": "Mateo"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Diego"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Benja"
+                    }
+                ],
+                "matches": [
+                    {
+                        "id": "G0-R1-M0-3",
+                        "t1": {
+                            "id": 0,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R1-M1-2",
+                        "t1": {
+                            "id": 1,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 2,
+                            "name": "Diego"
+                        },
+                        "s1": 2,
+                        "s2": 4,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R2-M2-0",
+                        "t1": {
+                            "id": 2,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 0,
+                            "name": "Seba"
+                        },
+                        "s1": 6,
+                        "s2": 3,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R2-M1-3",
+                        "t1": {
+                            "id": 1,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 2,
+                        "s2": 5,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R3-M0-1",
+                        "t1": {
+                            "id": 0,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 1,
+                            "name": "Mateo"
+                        },
+                        "s1": 3,
+                        "s2": 5,
+                        "round": 3,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R3-M2-3",
+                        "t1": {
+                            "id": 2,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 7,
+                        "s2": 2,
+                        "round": 3,
+                        "isFinished": true
+                    }
+                ]
+            }
+        ],
+        "shareCode": "FC-DC08",
+        "isSpectator": false,
+        "leagueSchedule": "single",
+        "leagueTheme": "brasileirao",
+        "bracketGenerated": false,
+        "celebratedLiga": true,
+        "lastSaved": "7/5/2026, 12:22:30 a.m."
+    },
+    "FC-F858": {
+        "id": "T-1778128705745",
+        "name": "Torneo LIGA - 7/5/2026",
+        "format": "copa",
+        "knockoutFormat": "single",
+        "participants": [
+            "Diego",
+            "Seba",
+            "Mateo",
+            "Benja"
+        ],
+        "groups": [
+            {
+                "id": 0,
+                "name": "Grupo A",
+                "teams": [
+                    {
+                        "id": 0,
+                        "name": "Diego"
+                    },
+                    {
+                        "id": 1,
+                        "name": "Seba"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Mateo"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Benja"
+                    }
+                ],
+                "matches": [
+                    {
+                        "id": "G0-R1-M0-3",
+                        "t1": {
+                            "id": 0,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 7,
+                        "s2": 2,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R1-M1-2",
+                        "t1": {
+                            "id": 1,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 2,
+                            "name": "Mateo"
+                        },
+                        "s1": 3,
+                        "s2": 5,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R2-M2-0",
+                        "t1": {
+                            "id": 2,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 0,
+                            "name": "Diego"
+                        },
+                        "s1": 2,
+                        "s2": 4,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R2-M1-3",
+                        "t1": {
+                            "id": 1,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R3-M0-1",
+                        "t1": {
+                            "id": 0,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 1,
+                            "name": "Seba"
+                        },
+                        "s1": 6,
+                        "s2": 3,
+                        "round": 3,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R3-M2-3",
+                        "t1": {
+                            "id": 2,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 2,
+                        "s2": 5,
+                        "round": 3,
+                        "isFinished": true
+                    }
+                ]
+            }
+        ],
+        "shareCode": "FC-F858",
+        "isSpectator": false,
+        "leagueSchedule": "single",
+        "leagueTheme": "brasileirao",
+        "bracketGenerated": false,
+        "celebratedLiga": true,
+        "lastSaved": "7/5/2026, 12:45:08 a.m.",
+        "bracketRounds": [
+            [
+                {
+                    "id": "R0-M0",
+                    "t1": {
+                        "id": 0,
+                        "name": "Diego",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 3,
+                        "name": "Benja",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "s1": 5,
+                    "s2": 2,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                },
+                {
+                    "id": "R0-M1",
+                    "t1": {
+                        "id": 1,
+                        "name": "Seba",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 2,
+                        "name": "Mateo",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "s1": 5,
+                    "s2": 2,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t2",
+                    "isFinished": true
+                }
+            ],
+            [
+                {
+                    "id": "R1-M0",
+                    "t1": {
+                        "id": 0,
+                        "name": "Diego",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 1,
+                        "name": "Seba",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "s1": 2,
+                    "s2": 39,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": null,
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                }
+            ]
+        ]
+    },
+    "FC-6KQL": {
+        "id": "T-1778129857659",
+        "name": "Torneo LIGA - 7/5/2026",
+        "format": "copa",
+        "knockoutFormat": "single",
+        "participants": [
+            "Seba",
+            "Diego",
+            "Mateo",
+            "Benja"
+        ],
+        "groups": [
+            {
+                "id": 0,
+                "name": "Grupo A",
+                "teams": [
+                    {
+                        "id": 0,
+                        "name": "Seba"
+                    },
+                    {
+                        "id": 1,
+                        "name": "Diego"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Mateo"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Benja"
+                    }
+                ],
+                "matches": [
+                    {
+                        "id": "G0-R1-M0-3",
+                        "t1": {
+                            "id": 0,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R1-M1-2",
+                        "t1": {
+                            "id": 1,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 2,
+                            "name": "Mateo"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R2-M2-0",
+                        "t1": {
+                            "id": 2,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 0,
+                            "name": "Seba"
+                        },
+                        "s1": 5,
+                        "s2": 3,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R2-M1-3",
+                        "t1": {
+                            "id": 1,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 7,
+                        "s2": 2,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R3-M0-1",
+                        "t1": {
+                            "id": 0,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 1,
+                            "name": "Diego"
+                        },
+                        "s1": 3,
+                        "s2": 6,
+                        "round": 3,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R3-M2-3",
+                        "t1": {
+                            "id": 2,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Benja"
+                        },
+                        "s1": 2,
+                        "s2": 5,
+                        "round": 3,
+                        "isFinished": true
+                    }
+                ]
+            }
+        ],
+        "shareCode": "FC-6KQL",
+        "isSpectator": false,
+        "leagueSchedule": "single",
+        "leagueTheme": "brasileirao",
+        "bracketGenerated": true,
+        "celebratedLiga": true,
+        "lastSaved": "7/5/2026, 12:58:41 a.m.",
+        "bracketRounds": [
+            [
+                {
+                    "id": "R0-M0",
+                    "t1": {
+                        "id": 1,
+                        "name": "Diego",
+                        "p": 3,
+                        "w": 3,
+                        "d": 0,
+                        "l": 0,
+                        "gf": 17,
+                        "gc": 7,
+                        "pts": 9,
+                        "dg": 10,
+                        "ptsAvg": 3,
+                        "wAvg": 1,
+                        "dgAvg": 3.3333333333333335,
+                        "gfAvg": 5.666666666666667,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 3,
+                        "name": "Benja",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 9,
+                        "gc": 13,
+                        "pts": 3,
+                        "dg": -4,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1.3333333333333333,
+                        "gfAvg": 3,
+                        "qualType": "direct"
+                    },
+                    "s1": 5,
+                    "s2": 2,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                },
+                {
+                    "id": "R0-M1",
+                    "t1": {
+                        "id": 0,
+                        "name": "Seba",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 10,
+                        "gc": 13,
+                        "pts": 3,
+                        "dg": -3,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1,
+                        "gfAvg": 3.3333333333333335,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 2,
+                        "name": "Mateo",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 9,
+                        "gc": 12,
+                        "pts": 3,
+                        "dg": -3,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1,
+                        "gfAvg": 3,
+                        "qualType": "direct"
+                    },
+                    "s1": 2,
+                    "s2": 5,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t2",
+                    "isFinished": true
+                }
+            ],
+            [
+                {
+                    "id": "R1-M0",
+                    "t1": {
+                        "id": 1,
+                        "name": "Diego",
+                        "p": 3,
+                        "w": 3,
+                        "d": 0,
+                        "l": 0,
+                        "gf": 17,
+                        "gc": 7,
+                        "pts": 9,
+                        "dg": 10,
+                        "ptsAvg": 3,
+                        "wAvg": 1,
+                        "dgAvg": 3.3333333333333335,
+                        "gfAvg": 5.666666666666667,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 2,
+                        "name": "Mateo",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 9,
+                        "gc": 12,
+                        "pts": 3,
+                        "dg": -3,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1,
+                        "gfAvg": 3,
+                        "qualType": "direct"
+                    },
+                    "s1": 5,
+                    "s2": 3,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": null,
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                }
+            ]
+        ],
+        "celebratedCopa": true
+    },
+    "FC-ZWB0": {
+        "id": "T-1778130892998",
+        "name": "chicuelos",
+        "format": "copa",
+        "knockoutFormat": "single",
+        "participants": [
+            "diego",
+            "seba",
+            "mateo",
+            "benja"
+        ],
+        "groups": [
+            {
+                "id": 0,
+                "name": "Grupo A",
+                "teams": [
+                    {
+                        "id": 0,
+                        "name": "diego"
+                    },
+                    {
+                        "id": 1,
+                        "name": "seba"
+                    },
+                    {
+                        "id": 2,
+                        "name": "mateo"
+                    },
+                    {
+                        "id": 3,
+                        "name": "benja"
+                    }
+                ],
+                "matches": [
+                    {
+                        "id": "G0-R1-M0-3",
+                        "t1": {
+                            "id": 0,
+                            "name": "diego"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "benja"
+                        },
+                        "s1": 7,
+                        "s2": 2,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R1-M1-2",
+                        "t1": {
+                            "id": 1,
+                            "name": "seba"
+                        },
+                        "t2": {
+                            "id": 2,
+                            "name": "mateo"
+                        },
+                        "s1": 3,
+                        "s2": 5,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R2-M2-0",
+                        "t1": {
+                            "id": 2,
+                            "name": "mateo"
+                        },
+                        "t2": {
+                            "id": 0,
+                            "name": "diego"
+                        },
+                        "s1": 2,
+                        "s2": 4,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R2-M1-3",
+                        "t1": {
+                            "id": 1,
+                            "name": "seba"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "benja"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R3-M0-1",
+                        "t1": {
+                            "id": 0,
+                            "name": "diego"
+                        },
+                        "t2": {
+                            "id": 1,
+                            "name": "seba"
+                        },
+                        "s1": 6,
+                        "s2": 3,
+                        "round": 3,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R3-M2-3",
+                        "t1": {
+                            "id": 2,
+                            "name": "mateo"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "benja"
+                        },
+                        "s1": 2,
+                        "s2": 5,
+                        "round": 3,
+                        "isFinished": true
+                    }
+                ]
+            }
+        ],
+        "shareCode": "FC-ZWB0",
+        "isSpectator": false,
+        "leagueTheme": "chile",
+        "leagueSchedule": "single",
+        "bracketGenerated": false,
+        "celebratedLiga": true,
+        "lastSaved": "7/5/2026, 1:19:05 a.m.",
+        "bracketRounds": [
+            [
+                {
+                    "id": "R0-M0",
+                    "t1": {
+                        "id": 0,
+                        "name": "diego",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 3,
+                        "name": "benja",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "s1": 5,
+                    "s2": 4,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                },
+                {
+                    "id": "R0-M1",
+                    "t1": {
+                        "id": 1,
+                        "name": "seba",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 2,
+                        "name": "mateo",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "s1": 2,
+                    "s2": 1,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t2",
+                    "isFinished": true
+                }
+            ],
+            [
+                {
+                    "id": "R1-M0",
+                    "t1": {
+                        "id": 0,
+                        "name": "diego",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 1,
+                        "name": "seba",
+                        "ptsAvg": 0,
+                        "dgAvg": 0,
+                        "gfAvg": 0,
+                        "qualType": "direct"
+                    },
+                    "s1": 2,
+                    "s2": 3,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": null,
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                }
+            ]
+        ],
+        "celebratedCopa": true
+    },
+    "FC-8R1K": {
+        "id": "T-1778268776470",
+        "name": "Torneo LIGA - 8/5/2026",
+        "format": "copa",
+        "knockoutFormat": "single",
+        "participants": [
+            "Benja",
+            "Diego",
+            "Seba",
+            "Mateo"
+        ],
+        "groups": [
+            {
+                "id": 0,
+                "name": "Grupo A",
+                "teams": [
+                    {
+                        "id": 0,
+                        "name": "Benja"
+                    },
+                    {
+                        "id": 1,
+                        "name": "Diego"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Seba"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Mateo"
+                    }
+                ],
+                "matches": [
+                    {
+                        "id": "G0-R1-M0-3",
+                        "t1": {
+                            "id": 0,
+                            "name": "Benja"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Mateo"
+                        },
+                        "s1": 5,
+                        "s2": 2,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R1-M1-2",
+                        "t1": {
+                            "id": 1,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 2,
+                            "name": "Seba"
+                        },
+                        "s1": 6,
+                        "s2": 3,
+                        "round": 1,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R2-M2-0",
+                        "t1": {
+                            "id": 2,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 0,
+                            "name": "Benja"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R2-M1-3",
+                        "t1": {
+                            "id": 1,
+                            "name": "Diego"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Mateo"
+                        },
+                        "s1": 4,
+                        "s2": 2,
+                        "round": 2,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G0-R3-M0-1",
+                        "t1": {
+                            "id": 0,
+                            "name": "Benja"
+                        },
+                        "t2": {
+                            "id": 1,
+                            "name": "Diego"
+                        },
+                        "s1": 2,
+                        "s2": 7,
+                        "round": 3,
+                        "isFinished": true
+                    },
+                    {
+                        "id": "G1-R3-M2-3",
+                        "t1": {
+                            "id": 2,
+                            "name": "Seba"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Mateo"
+                        },
+                        "s1": 3,
+                        "s2": 5,
+                        "round": 3,
+                        "isFinished": true
+                    }
+                ]
+            }
+        ],
+        "shareCode": "FC-8R1K",
+        "isSpectator": false,
+        "leagueTheme": "chile",
+        "leagueSchedule": "single",
+        "bracketGenerated": true,
+        "celebratedLiga": true,
+        "lastSaved": "8/5/2026, 15:33:44",
+        "bracketRounds": [
+            [
+                {
+                    "id": "R0-M0",
+                    "t1": {
+                        "id": 1,
+                        "name": "Diego",
+                        "p": 3,
+                        "w": 3,
+                        "d": 0,
+                        "l": 0,
+                        "gf": 17,
+                        "gc": 7,
+                        "pts": 9,
+                        "dg": 10,
+                        "ptsAvg": 3,
+                        "wAvg": 1,
+                        "dgAvg": 3.3333333333333335,
+                        "gfAvg": 5.666666666666667,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 0,
+                        "name": "Benja",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 9,
+                        "gc": 13,
+                        "pts": 3,
+                        "dg": -4,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1.3333333333333333,
+                        "gfAvg": 3,
+                        "qualType": "direct"
+                    },
+                    "s1": 5,
+                    "s2": 4,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                },
+                {
+                    "id": "R0-M1",
+                    "t1": {
+                        "id": 2,
+                        "name": "Seba",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 10,
+                        "gc": 13,
+                        "pts": 3,
+                        "dg": -3,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1,
+                        "gfAvg": 3.3333333333333335,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 3,
+                        "name": "Mateo",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 9,
+                        "gc": 12,
+                        "pts": 3,
+                        "dg": -3,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1,
+                        "gfAvg": 3,
+                        "qualType": "direct"
+                    },
+                    "s1": 4,
+                    "s2": 2,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": "R1-M0",
+                    "nextMatchPos": "t2",
+                    "isFinished": true
+                }
+            ],
+            [
+                {
+                    "id": "R1-M0",
+                    "t1": {
+                        "id": 1,
+                        "name": "Diego",
+                        "p": 3,
+                        "w": 3,
+                        "d": 0,
+                        "l": 0,
+                        "gf": 17,
+                        "gc": 7,
+                        "pts": 9,
+                        "dg": 10,
+                        "ptsAvg": 3,
+                        "wAvg": 1,
+                        "dgAvg": 3.3333333333333335,
+                        "gfAvg": 5.666666666666667,
+                        "qualType": "direct"
+                    },
+                    "t2": {
+                        "id": 2,
+                        "name": "Seba",
+                        "p": 3,
+                        "w": 1,
+                        "d": 0,
+                        "l": 2,
+                        "gf": 10,
+                        "gc": 13,
+                        "pts": 3,
+                        "dg": -3,
+                        "ptsAvg": 1,
+                        "wAvg": 0.3333333333333333,
+                        "dgAvg": -1,
+                        "gfAvg": 3.3333333333333335,
+                        "qualType": "direct"
+                    },
+                    "s1": 2,
+                    "s2": 3,
+                    "s1_v": null,
+                    "s2_v": null,
+                    "p1": null,
+                    "p2": null,
+                    "nextMatchId": null,
+                    "nextMatchPos": "t1",
+                    "isFinished": true
+                }
+            ]
+        ],
+        "celebratedCopa": true
+    },
+    "FC-2CNP": {
+        "id": "T-1778269663882",
+        "name": "Chicuelos",
+        "format": "liga",
+        "knockoutFormat": "single",
+        "participants": [
+            "Mateo",
+            "Equipo 3",
+            "Equipo 4",
+            "Equipo 2"
+        ],
+        "groups": [
+            {
+                "id": 0,
+                "name": "Grupo A",
+                "teams": [
+                    {
+                        "id": 0,
+                        "name": "Mateo"
+                    },
+                    {
+                        "id": 1,
+                        "name": "Equipo 3"
+                    },
+                    {
+                        "id": 2,
+                        "name": "Equipo 4"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Equipo 2"
+                    }
+                ],
+                "matches": [
+                    {
+                        "id": "G0-R1-M0-3",
+                        "t1": {
+                            "id": 0,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Equipo 2"
+                        },
+                        "s1": null,
+                        "s2": null,
+                        "round": 1
+                    },
+                    {
+                        "id": "G1-R1-M1-2",
+                        "t1": {
+                            "id": 1,
+                            "name": "Equipo 3"
+                        },
+                        "t2": {
+                            "id": 2,
+                            "name": "Equipo 4"
+                        },
+                        "s1": null,
+                        "s2": null,
+                        "round": 1
+                    },
+                    {
+                        "id": "G0-R2-M2-0",
+                        "t1": {
+                            "id": 2,
+                            "name": "Equipo 4"
+                        },
+                        "t2": {
+                            "id": 0,
+                            "name": "Mateo"
+                        },
+                        "s1": null,
+                        "s2": null,
+                        "round": 2
+                    },
+                    {
+                        "id": "G1-R2-M1-3",
+                        "t1": {
+                            "id": 1,
+                            "name": "Equipo 3"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Equipo 2"
+                        },
+                        "s1": null,
+                        "s2": null,
+                        "round": 2
+                    },
+                    {
+                        "id": "G0-R3-M0-1",
+                        "t1": {
+                            "id": 0,
+                            "name": "Mateo"
+                        },
+                        "t2": {
+                            "id": 1,
+                            "name": "Equipo 3"
+                        },
+                        "s1": null,
+                        "s2": null,
+                        "round": 3
+                    },
+                    {
+                        "id": "G1-R3-M2-3",
+                        "t1": {
+                            "id": 2,
+                            "name": "Equipo 4"
+                        },
+                        "t2": {
+                            "id": 3,
+                            "name": "Equipo 2"
+                        },
+                        "s1": null,
+                        "s2": null,
+                        "round": 3
+                    }
+                ]
+            }
+        ],
+        "shareCode": "FC-2CNP",
+        "isSpectator": false,
+        "leagueTheme": "chile",
+        "leagueSchedule": "single",
+        "lastSaved": "8/5/2026, 15:47:45"
+    }
+}

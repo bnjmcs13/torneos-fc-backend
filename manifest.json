@@ -1,0 +1,17 @@
+{
+  "name": "Torneos FC",
+  "short_name": "TorneosFC",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#FFD700",
+  "description": "El mejor organizador y simulador de torneos de fútbol.",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "192x192 512x512 1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

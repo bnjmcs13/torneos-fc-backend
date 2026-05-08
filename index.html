@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Torneos FC</title>
+    <!-- PWA Setup -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#FFD700">
+    <link rel="apple-touch-icon" href="./icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="style_mobile.css?v=3">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="stars-bg"></div>
+    
+    <!-- Boton Volver Global -->
+    <button id="btn-global-back" class="global-back-btn hidden" title="Volver atrás">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
+    <!-- Menú Hamburguesa -->
+    <div class="hamburger-menu">
+        <button id="btn-menu-toggle" class="menu-toggle-btn" title="Menú">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div id="dropdown-menu" class="dropdown-content">
+            <button id="btn-menu-home">Ir al Inicio</button>
+            <button id="btn-menu-new">Crear Torneo Nuevo</button>
+            <button id="btn-menu-saved">Torneos Guardados</button>
+            <button id="btn-menu-stats" class="hidden" style="color: #FFD700;">Estadísticas</button>
+            <button id="btn-menu-install" class="hidden" style="color: #00F0FF;">📱 Instalar App</button>
+            <hr class="menu-divider" style="border-color: rgba(255,255,255,0.05); margin: 0;">
+            <button id="btn-menu-setup" class="hidden" style="color: var(--primary-color);">Configuración de Torneo</button>
+            <button id="btn-menu-groups" class="hidden" style="color: var(--primary-color);">Fase de Grupos</button>
+            <button id="btn-menu-bracket" class="hidden" style="color: var(--primary-color);">Fase Eliminatorias</button>
+            <hr class="menu-divider" style="border-color: rgba(255,255,255,0.05); margin: 0;">
+            <button id="btn-menu-reset" style="color: #ff4d4d;">Limpiar Datos</button>
+        </div>
+    </div>
+
+    <!-- Badge de Código Global -->
+    <div id="global-share-badge" class="global-share-badge hidden" title="Comparte este código para Modo Espectador">
+        <span class="f-icon">👁️</span> Código: <strong id="global-code-text">---</strong>
+    </div>
+
+    <div class="container">
+        
+        <!-- Vista de Inicio Principal -->
+        <section id="home-view" class="view active hero-section stadium-bg">
+            <div class="stadium-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-titles-wrapper">
+                    <h1 class="champions-title hero-title">TORNEOS FC</h1>
+                    <p class="hero-subtitle">El camino hacia la gloria</p>
+                </div>
+                
+                <div id="hero-continue-container" class="hero-continue-container hidden">
+                    <button id="btn-hero-continue" class="btn-continue-last">
+                        <span class="pulse-dot"></span> Continuar Último: <strong id="continue-name">...</strong>
+                    </button>
+                </div>
+
+                <div class="hero-actions">
+                    <button id="btn-create-tournament" class="btn-primary hero-btn">Crear Torneo</button>
+                    <button id="btn-join-tournament" class="btn-secondary hero-btn" style="border-color: #00F0FF; color: #00F0FF;">Unirse a Torneo</button>
+                    <button id="btn-hero-saved" class="btn-secondary hero-btn-secondary">Torneos Guardados</button>
+                    <button id="btn-hero-install" class="btn-primary hero-btn hidden" style="background: linear-gradient(135deg, #00F0FF, #0080FF); box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);">
+                        <span class="f-icon">📱</span> Instalar App
+                    </button>
+                </div>
+
+                <div class="hero-features">
+                    <div class="feature-card">
+                        <span class="f-icon">⚙️</span>
+                        <span>Configuración<br>Total</span>
+                    </div>
+                    <div class="feature-card">
+                        <span class="f-icon">🏆</span>
+                        <span>Múltiples<br>Formatos</span>
+                    </div>
+                    <div class="feature-card">
+                        <span class="f-icon">💾</span>
+                        <span>Guardado<br>Local</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vista de Formatos -->
+        <section id="format-view" class="view">
+            <header>
+                <h1 class="champions-title">FORMATO</h1>
+                <p>Elige el tipo de competición</p>
+            </header>
+            
+            <div class="format-cards-container">
+                <div class="format-card" data-format="champions">
+                    <div class="format-icon">⭐</div>
+                    <h3>Champions League</h3>
+                    <p>Fase de grupos con clasificación a eliminatorias finales.</p>
+                </div>
+                <div class="format-card" data-format="liga">
+                    <div class="format-icon">🏆</div>
+                    <h3>Modo Liga</h3>
+                    <p>Todos contra todos. El que sume más puntos es el campeón.</p>
+                </div>
+                <div class="format-card" data-format="copa">
+                    <div class="format-icon">⚔️</div>
+                    <h3>Copas y Llaves</h3>
+                    <p>Muerte súbita en eliminación directa desde el inicio.</p>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- Vista de Configuración -->
+        <section id="setup-view" class="view">
+            <div class="navbar-header">
+                <div class="nav-titles">
+                    <h1 class="champions-title compact">TORNEOS FC</h1>
+                    <p>Configuración</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="input-group">
+                    <label for="tournament-name">Nombre del Torneo (Opcional):</label>
+                    <input type="text" id="tournament-name" placeholder="Ej. Copa de Verano 2026" />
+                </div>
+                <div class="input-group">
+                    <label for="num-players">Cantidad de Participantes (2 - 32):</label>
+                    <input type="number" id="num-players" min="2" max="128" value="16" />
+                </div>
+                
+                <!-- Configuración Manual Champions -->
+                <div id="custom-champions-config" class="hidden">
+                    <div class="input-group">
+                        <label>Modalidad de Reglas:</label>
+                        <select id="config-mode-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                            <option value="auto">Predeterminada (Recomendada)</option>
+                            <option value="manual">Personalizada (Manual)</option>
+                        </select>
+                    </div>
+
+                    <div id="manual-rules-panel" class="manual-rules-panel hidden">
+                        <div class="input-group">
+                            <label for="custom-groups">Total de Grupos:</label>
+                            <input type="number" id="custom-groups" min="1" max="32" value="4" />
+                        </div>
+                        <div class="input-group">
+                            <label for="custom-direct">Clasificados Directos por Grupo:</label>
+                            <input type="number" id="custom-direct" min="1" max="16" value="2" />
+                            <small class="helper-text">Ej: Si pones 2, pasan el 1ro y 2do de cada grupo.</small>
+                        </div>
+                        <div class="input-group">
+                            <label for="custom-wildcards">Cupos Comodín (Mejores Siguientes):</label>
+                            <input type="number" id="custom-wildcards" min="0" max="32" value="0" />
+                            <small class="helper-text">Ej: Los 2 mejores terceros.</small>
+                        </div>
+                        
+                        <div id="custom-valid-banner" class="custom-valid-banner valid">
+                            Total Clasificados a Eliminatoria: <strong id="custom-total-target">8</strong>
+                        </div>
+                        <small id="custom-error-text" class="error-text hidden" style="color: #ff4d4d; display: block; margin-top: 0.5rem; text-align: center;">⚠️ El total de clasificados debe ser una potencia de 2 (2, 4, 8, 16 o 32) para las llaves eliminatorias.</small>
+                    </div>
+                </div>
+                
+                <!-- Configuración Modo Copa -->
+                <div id="copa-config" class="hidden" style="margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                    <div class="input-group">
+                        <label>Formato Eliminatorio:</label>
+                        <select id="copa-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                            <option value="single" selected>Partido Único</option>
+                            <option value="double">Ida y Vuelta</option>
+                        </select>
+                    </div>
+                    <small class="helper-text" style="color: #00F0FF; display: block; margin-top: 0.5rem;">Copa Pura: Torneo de eliminación directa. Elige 2, 4, 8, 16 o 32 equipos.</small>
+                </div>
+                
+                <!-- Configuración Modo Liga -->
+                <div id="league-config" class="hidden" style="margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                    <div class="input-group">
+                        <label>Modalidad de Partidos:</label>
+                        <select id="league-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                            <option value="single">A un solo partido</option>
+                            <option value="double" selected>Ida y Vuelta (Normal)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Selección de Liga (Temática):</label>
+                        <select id="league-theme-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                            <option value="brasileirao">Brasileirão (Brasil)</option>
+                            <option value="premier">Premier League (Inglaterra)</option>
+                            <option value="laliga">La Liga (España)</option>
+                            <option value="seriea">Serie A (Italia)</option>
+                            <option value="bundesliga">Bundesliga (Alemania)</option>
+                            <option value="ligue1">Ligue 1 (Francia)</option>
+                            <option value="argentina">Liga Profesional (Argentina)</option>
+                            <option value="chile">Primera División (Chile)</option>
+                            <option value="mls">MLS (EEUU)</option>
+                            <option value="eredivisie">Eredivisie (Países Bajos)</option>
+                            <option value="primeira">Primeira Liga (Portugal)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="players-list" class="players-list">
+                    <!-- Inputs de jugadores generados dinámicamente -->
+                </div>
+                
+                <button id="btn-generate" class="btn-primary">Generar Torneo</button>
+            </div>
+        </section>
+
+        <!-- Vista de Grupos -->
+        <section id="groups-view" class="view">
+            <div class="navbar-header">
+                <div class="nav-titles">
+                    <h1 id="groups-main-title" class="champions-title compact">FASE DE GRUPOS</h1>
+                    <p id="groups-sub-title">Resultados</p>
+                </div>
+                <div class="view-controls" style="display:flex; gap:1rem; align-items:center;">
+                    <button id="btn-save-groups" class="btn-secondary" style="color:var(--primary-color); border-color:var(--primary-color);">💾 Guardar</button>
+                    <button id="btn-header-stats-groups" class="btn-secondary" style="color:#FFD700; border-color:#FFD700;">📊 Estadísticas</button>
+                    <button id="btn-to-bracket" class="btn-primary" style="width: auto; padding: 0.5rem 1.5rem; font-size: 0.9rem;">Ver Fase Eliminatoria</button>
+                </div>
+            </div>
+            
+            <div id="groups-legend" class="groups-legend hidden">
+                <div class="legend-item" id="legend-direct"><span class="legend-color direct"></span> Clasificación Directa</div>
+                <div class="legend-item" id="legend-wildcard"><span class="legend-color wildcard"></span> Repechaje / Mejores Segundos</div>
+            </div>
+
+            <!-- Static Champion Banner -->
+            <div id="champion-badge" class="champion-banner hidden">
+                <div class="badge-icon">🏆</div>
+                <div class="badge-info">
+                    <span>CAMPEÓN DE LIGA</span>  
+                    <span id="badge-champion-name">EQUIPO</span>
+                </div>
+            </div>
+
+            <div id="groups-container" class="groups-grid">
+                <!-- Grupos generados dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Vista de Eliminatorias (Bracket) -->
+        <section id="bracket-view" class="view">
+            <div class="navbar-header">
+                <div class="nav-titles">
+                    <h1 class="champions-title compact">FASE FINAL</h1>
+                    <p>Eliminatorias</p>
+                </div>
+                <div class="bracket-controls" style="display:flex; gap:1rem; align-items:center;">
+                    <button id="btn-save-bracket" class="btn-secondary" style="color:var(--primary-color); border-color:var(--primary-color);">💾 Guardar</button>
+                    <button id="btn-header-stats-bracket" class="btn-secondary" style="color:#FFD700; border-color:#FFD700;">📊 Estadísticas</button>
+                    <select id="bracket-format-select" class="form-select">
+                        <option value="single">Partido Único</option>
+                        <option value="double">Ida y Vuelta</option>
+                    </select>
+                    <button id="btn-to-groups" class="btn-secondary">Volver a Grupos</button>
+                </div>
+            </div>
+            
+            <div id="bracket-container" class="bracket">
+                <!-- Arbol generado dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Vista de Estadisticas -->
+        <section id="stats-view" class="view">
+            <div class="navbar-header">
+                <div class="nav-titles">
+                    <h1 class="champions-title compact">ESTADÍSTICAS</h1>
+                    <p>Cuadro de Honor</p>
+                </div>
+                <div class="view-controls">
+                    <button id="btn-stats-back" class="btn-secondary">Volver Atrás</button>
+                </div>
+            </div>
+            
+            <div id="stats-container" class="groups-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); padding-top: 2rem;">
+                <!-- Tarjetas estéticas inyectadas dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Vista de Torneos Guardados -->
+        <section id="saved-view" class="view">
+            <header>
+                <h1 class="champions-title">GUARDADOS</h1>
+                <p>Tus torneos anteriores</p>
+            </header>
+            
+            <div id="saved-list-container" class="saved-cards-container">
+                <!-- Se inyectan tarjetas por JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modales o Notificaciones -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Modal de Campeón -->
+    <div id="champion-modal" class="champion-modal hidden">
+        <div class="champion-content">
+            <div class="trophy-icon">🏆</div>
+            <h3 id="champion-sub" class="champion-sub">¡CAMPEÓN DEFINITIVO!</h3>
+            <h1 id="champion-name" class="champion-name">EQUIPO</h1>
+            <p id="champion-desc" class="champion-desc">Ha conquistado el torneo supremo</p>
+            <div style="display:flex; justify-content:center; gap: 1rem; margin-top:2rem;">
+                <button id="btn-close-champion" class="btn-primary" style="margin-top:0;">Continuar</button>
+                <button id="btn-champion-stats" class="btn-secondary" style="border-color:#FFD700; color:#FFD700; margin-top:0;">Ver Estadísticas</button>
+            </div>
+            <button id="btn-liga-to-copa" class="btn-primary hidden" style="margin-top:1rem; background: linear-gradient(135deg, #FFD700, #F57F17); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); color: #000; font-weight: 900;">
+                🏆 Continuar a Modo Copa (Playoffs)
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Unirse Torneo -->
+    <div id="join-modal" class="champion-modal hidden">
+        <div class="champion-content" style="background: rgba(10, 25, 47, 0.95); border: 2px solid #00F0FF; padding: 2rem;">
+            <div class="trophy-icon" style="font-size: 3rem;">👁️</div>
+            <h3 class="champion-sub" style="color: #00F0FF;">MODO ESPECTADOR</h3>
+            <p class="champion-desc">Ingresa el código del torneo para ver los resultados en vivo.</p>
+            <div class="input-group" style="margin-top: 1.5rem; text-align: left;">
+                <input type="text" id="join-code-input" placeholder="Ej: FC-1234" style="text-transform: uppercase; text-align: center; font-size: 1.5rem; letter-spacing: 2px;" />
+            </div>
+            <small id="join-error-text" class="error-text hidden" style="color: #ff4d4d; display: block; margin-top: 0.5rem;">Código inválido o torneo no encontrado.</small>
+            <div style="display:flex; justify-content:center; gap: 1rem; margin-top:2rem;">
+                <button id="btn-cancel-join" class="btn-secondary" style="margin-top:0;">Cancelar</button>
+                <button id="btn-confirm-join" class="btn-primary" style="margin-top:0; background: linear-gradient(135deg, #00F0FF, #0080FF);">Ver Torneo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    console.log('ServiceWorker registrado con éxito:', registration.scope);
+                }).catch(error => {
+                    console.log('Fallo en registro de ServiceWorker:', error);
+                });
+            });
+        }
+    </script>
+    <script src="app.js?v=3"></script>
+</body>
+</html>
