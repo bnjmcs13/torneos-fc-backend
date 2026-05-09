@@ -47,16 +47,6 @@
         </div>
     </div>
 
-    <!-- Badge de Código Global -->
-    <div id="global-share-badge" class="global-share-badge hidden" title="Comparte este código para Modo Espectador">
-        <button id="btn-toggle-code" style="background:none; border:none; color:inherit; font:inherit; cursor:pointer; display:flex; align-items:center; gap:0.5rem; padding:0; outline:none;">
-            <span class="f-icon">👁️</span> <span id="toggle-code-text">Ver Código</span>
-        </button>
-        <span id="global-code-container" class="hidden" style="margin-left: 0.5rem; padding-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.2);">
-            <strong id="global-code-text">---</strong>
-        </span>
-    </div>
-
     <div class="container">
         
         <!-- Vista de Inicio Principal -->
@@ -233,9 +223,10 @@
                     <h1 id="groups-main-title" class="champions-title compact">FASE DE GRUPOS</h1>
                     <p id="groups-sub-title">Resultados</p>
                 </div>
-                <div class="view-controls" style="display:flex; gap:1rem; align-items:center;">
+                <div class="view-controls" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
                     <button id="btn-save-groups" class="btn-secondary" style="color:var(--primary-color); border-color:var(--primary-color);">💾 Guardar</button>
                     <button id="btn-header-stats-groups" class="btn-secondary" style="color:#FFD700; border-color:#FFD700;">📊 Estadísticas</button>
+                    <button class="btn-secondary btn-inline-code" style="color:#00F0FF; border-color:#00F0FF;">👁️ Ver Código</button>
                     <button id="btn-to-bracket" class="btn-primary" style="width: auto; padding: 0.5rem 1.5rem; font-size: 0.9rem;">Ver Fase Eliminatoria</button>
                 </div>
             </div>
@@ -266,9 +257,10 @@
                     <h1 class="champions-title compact">FASE FINAL</h1>
                     <p>Eliminatorias</p>
                 </div>
-                <div class="bracket-controls" style="display:flex; gap:1rem; align-items:center;">
+                <div class="bracket-controls" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
                     <button id="btn-save-bracket" class="btn-secondary" style="color:var(--primary-color); border-color:var(--primary-color);">💾 Guardar</button>
                     <button id="btn-header-stats-bracket" class="btn-secondary" style="color:#FFD700; border-color:#FFD700;">📊 Estadísticas</button>
+                    <button class="btn-secondary btn-inline-code" style="color:#00F0FF; border-color:#00F0FF;">👁️ Ver Código</button>
                     <select id="bracket-format-select" class="form-select">
                         <option value="single">Partido Único</option>
                         <option value="double">Ida y Vuelta</option>

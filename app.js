@@ -102,19 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewHistory = [];
 
     window.updateGlobalBadge = function() {
-        const badge = document.getElementById('global-share-badge');
-        const text = document.getElementById('global-code-text');
-        if (!badge || !text) return;
-        
-        const currentView = document.querySelector('.view.active');
-        const isHomeOrFormat = currentView && (currentView.id === 'home-view' || currentView.id === 'format-view' || currentView.id === 'setup-view');
-
-        if (state.shareCode && !isHomeOrFormat) {
-            text.textContent = state.shareCode;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
+        document.querySelectorAll('.btn-inline-code').forEach(btn => {
+            if (state.shareCode) {
+                btn.classList.remove('hidden');
+                btn.textContent = '👁️ Ver Código';
+                btn.dataset.showing = 'false';
+            } else {
+                btn.classList.add('hidden');
+            }
+        });
     };
 
     function showView(view, pushToHistory = true) {
@@ -187,21 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnMenuGroups = document.getElementById('btn-menu-groups');
     const btnMenuBracket = document.getElementById('btn-menu-bracket');
 
-    const btnToggleCode = document.getElementById('btn-toggle-code');
-    const toggleCodeText = document.getElementById('toggle-code-text');
-    const globalCodeContainer = document.getElementById('global-code-container');
-
-    if (btnToggleCode) {
-        btnToggleCode.addEventListener('click', () => {
-            if (globalCodeContainer.classList.contains('hidden')) {
-                globalCodeContainer.classList.remove('hidden');
-                toggleCodeText.textContent = 'Ocultar';
+    document.querySelectorAll('.btn-inline-code').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.showing === 'true') {
+                btn.textContent = '👁️ Ver Código';
+                btn.dataset.showing = 'false';
             } else {
-                globalCodeContainer.classList.add('hidden');
-                toggleCodeText.textContent = 'Ver Código';
+                btn.textContent = `👁️ ${state.shareCode}`;
+                btn.dataset.showing = 'true';
             }
         });
-    }
+    });
 
     btnMenuToggle.addEventListener('click', (e) => {
         e.stopPropagation();
