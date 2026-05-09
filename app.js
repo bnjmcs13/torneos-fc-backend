@@ -739,15 +739,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const groupsMainTitle = document.getElementById('groups-main-title');
         const groupsSubTitle = document.getElementById('groups-sub-title');
         const btnToBracketElement = document.getElementById('btn-to-bracket'); // Fallback direct fetch
+        const btnLigaPlayoffsInline = document.getElementById('btn-liga-playoffs-inline');
 
         if (state.format === 'liga') {
             if (groupsMainTitle) groupsMainTitle.textContent = state.name ? state.name.toUpperCase() : 'LIGA';
             if (groupsSubTitle) groupsSubTitle.textContent = 'TABLA GENERAL';
-            if (btnToBracketElement) btnToBracketElement.classList.add('hidden');
+            
+            const group = state.groups.length > 0 ? state.groups[0] : null;
+            const allMatchesPlayed = group && group.matches.length > 0 && group.matches.every(m => m.s1 !== null && m.s2 !== null);
+            
+            if (state.bracketGenerated) {
+                if (btnToBracketElement) btnToBracketElement.classList.remove('hidden');
+                if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.add('hidden');
+            } else if (allMatchesPlayed) {
+                if (btnToBracketElement) btnToBracketElement.classList.add('hidden');
+                if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.remove('hidden');
+            } else {
+                if (btnToBracketElement) btnToBracketElement.classList.add('hidden');
+                if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.add('hidden');
+            }
         } else {
             if (groupsMainTitle) groupsMainTitle.textContent = 'FASE DE GRUPOS';
             if (groupsSubTitle) groupsSubTitle.textContent = 'RESULTADOS';
             if (btnToBracketElement && state.participants.length > 3) btnToBracketElement.classList.remove('hidden');
+            if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.add('hidden');
         }
 
         // Logic to show floating badge if tournament is ended
@@ -1902,6 +1917,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLigaToCopa = document.getElementById('btn-liga-to-copa');
     if (btnLigaToCopa) {
         btnLigaToCopa.addEventListener('click', transitionLigaToCopa);
+    }
+    
+    const btnLigaPlayoffsInline = document.getElementById('btn-liga-playoffs-inline');
+    if (btnLigaPlayoffsInline) {
+        btnLigaPlayoffsInline.addEventListener('click', transitionLigaToCopa);
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
