@@ -72,6 +72,34 @@ document.addEventListener('DOMContentLoaded', () => {
             input.value = currentVals[i] || '';
             playersList.appendChild(input);
         }
+        
+        // Auto-update custom champions config based on player count
+        const rec = getRecommendedConfig(count);
+        const cg = document.getElementById('custom-groups');
+        const cd = document.getElementById('custom-direct');
+        const cw = document.getElementById('custom-wildcards');
+        if (cg) cg.value = rec.gCount;
+        if (cd) cd.value = rec.topN;
+        if (cw) cw.value = rec.bestCount;
+        if (typeof calculateManualConfig === 'function') calculateManualConfig();
+    }
+
+    function getRecommendedConfig(n) {
+        if (n <= 2) return { gCount: 0, topN: 2, bestCount: 0 };
+        if (n === 3) return { gCount: 1, topN: 2, bestCount: 0 };
+        if (n === 4) return { gCount: 1, topN: 2, bestCount: 0 };
+        if (n === 5) return { gCount: 1, topN: 4, bestCount: 0 };
+        if (n === 6) return { gCount: 2, topN: 2, bestCount: 0 };
+        if (n === 7) return { gCount: 2, topN: 2, bestCount: 0 };
+        if (n === 8) return { gCount: 2, topN: 2, bestCount: 0 };
+        if (n === 9) return { gCount: 2, topN: 2, bestCount: 0 };
+        if (n >= 10 && n <= 11) return { gCount: 2, topN: 4, bestCount: 0 };
+        if (n >= 12 && n <= 15) return { gCount: 3, topN: 2, bestCount: 2 };
+        if (n >= 16 && n <= 19) return { gCount: 4, topN: 2, bestCount: 0 };
+        if (n >= 20 && n <= 23) return { gCount: 5, topN: 1, bestCount: 3 };
+        if (n >= 24 && n <= 31) return { gCount: 6, topN: 1, bestCount: 2 };
+        if (n === 32) return { gCount: 8, topN: 2, bestCount: 0 };
+        return { gCount: Math.max(1, Math.floor(n/4)), topN: 2, bestCount: 0 };
     }
 
     numPlayersInput.addEventListener('input', renderPlayerInputs);
@@ -333,7 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const customChampionsConfig = document.getElementById('custom-champions-config');
-    const configModeSelect = document.getElementById('config-mode-select');
     const manualRulesPanel = document.getElementById('manual-rules-panel');
     const customGroupsInput = document.getElementById('custom-groups');
     const customDirectInput = document.getElementById('custom-direct');
@@ -343,21 +370,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const customErrorText = document.getElementById('custom-error-text');
 
     let isManualConfigValid = true;
-
-    if (configModeSelect) {
-        configModeSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'manual') {
-                manualRulesPanel.classList.remove('hidden');
-                calculateManualConfig();
-            } else {
-                manualRulesPanel.classList.add('hidden');
-                isManualConfigValid = true; 
-                customErrorText.classList.add('hidden');
-                customValidBanner.classList.remove('invalid');
-                customValidBanner.classList.add('valid');
-            }
-        });
-    }
+    
+    // Auto calculate when manual inputs change
+    if (customGroupsInput) customGroupsInput.addEventListener('input', calculateManualConfig);
+    if (customDirectInput) customDirectInput.addEventListener('input', calculateManualConfig);
+    if (customWildcardsInput) customWildcardsInput.addEventListener('input', calculateManualConfig);
 
     function calculateManualConfig() {
         const gCount = parseInt(customGroupsInput.value) || 0;
@@ -400,22 +417,40 @@ document.addEventListener('DOMContentLoaded', () => {
             return { gCount: 1, target: 1, rule: 'liga' };
         }
 
-        if (state.format === 'champions' && configModeSelect && configModeSelect.value === 'manual') {
+        if (state.format === 'champions') {
+            if (n === 4 && state.n4Choice === 'semis') {
+                return { rule: 'custom', gCount: 1, target: 4, topN: 4, bestCount: 0 };
+            }
+            if (n === 4 && state.n4Choice === 'final') {
+                return { rule: 'custom', gCount: 1, target: 2, topN: 2, bestCount: 0 };
+            }
+            
+            if (state.customConfig) {
+                return {
+                    rule: 'custom',
+                    gCount: state.customConfig.gCount,
+                    target: state.customConfig.target,
+                    topN: state.customConfig.topN,
+                    bestCount: state.customConfig.bestCount
+                };
+            }
+            
+            // Fallback for older tournaments before customConfig was saved
+            const rec = getRecommendedConfig(n);
+            const target = (rec.gCount * rec.topN) + rec.bestCount;
             return {
                 rule: 'custom',
-                gCount: parseInt(customGroupsInput.value) || 0,
-                target: parseInt(customTotalTarget.textContent) || 0,
-                topN: parseInt(customDirectInput.value) || 0,
-                bestCount: parseInt(customWildcardsInput.value) || 0
+                gCount: rec.gCount,
+                target: target,
+                topN: rec.topN,
+                bestCount: rec.bestCount
             };
         }
 
+        // For backwards compatibility or other uses
         if (n === 2) return { gCount: 0, target: 2, rule: 'direct' };
         if (n === 3) return { gCount: 1, target: 2, rule: 'top2' };
-        if (n === 4) {
-            if (state.n4Choice === 'semis') return { gCount: 1, target: 4, rule: 'custom', topN: 4, bestCount: 0 };
-            return { gCount: 1, target: 2, rule: 'top2' };
-        }
+        if (n === 4) return { gCount: 1, target: 2, rule: 'top2' };
         if (n === 5) return { gCount: 1, target: 4, rule: 'custom', topN: 4, bestCount: 0 };
         if (n === 6) return { gCount: 2, target: 4, rule: 'top2' };
         if (n === 7) return { gCount: 2, target: 4, rule: 'top2' };
@@ -526,9 +561,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Generate Tournament
     btnGenerate.addEventListener('click', () => {
-        if (state.format === 'champions' && configModeSelect && configModeSelect.value === 'manual' && !isManualConfigValid) {
-            alert('Configuración inválida. El total de clasificados debe ser 2, 4, 8, 16 o 32.');
-            return;
+        if (state.format === 'champions') {
+            if (!isManualConfigValid) {
+                alert('Configuración inválida. Revisa los mensajes de error en rojo.');
+                return;
+            }
+            
+            // Save the exact user-defined config
+            const gCount = parseInt(customGroupsInput.value) || 0;
+            const topN = parseInt(customDirectInput.value) || 0;
+            const bestCount = parseInt(customWildcardsInput.value) || 0;
+            const target = (gCount * topN) + bestCount;
+            
+            state.customConfig = {
+                gCount: gCount,
+                topN: topN,
+                bestCount: bestCount,
+                target: target
+            };
         }
 
         const inputs = playersList.querySelectorAll('input');

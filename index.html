@@ -137,16 +137,9 @@
                 </div>
                 
                 <!-- Configuración Manual Champions -->
-                <div id="custom-champions-config" class="hidden">
-                    <div class="input-group">
-                        <label>Modalidad de Reglas:</label>
-                        <select id="config-mode-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                            <option value="auto">Predeterminada (Recomendada)</option>
-                            <option value="manual">Personalizada (Manual)</option>
-                        </select>
-                    </div>
-
-                    <div id="manual-rules-panel" class="manual-rules-panel hidden">
+                <div id="custom-champions-config" class="hidden" style="margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                    <h4 style="margin-top:0; margin-bottom:1rem; color: var(--accent-silver); text-align: center;">Configuración de Grupos y Clasificación</h4>
+                    <div id="manual-rules-panel" class="manual-rules-panel">
                         <div class="input-group">
                             <label for="custom-groups">Total de Grupos:</label>
                             <input type="number" id="custom-groups" min="1" max="32" value="4" />
