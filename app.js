@@ -411,10 +411,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (n === 2) return { gCount: 0, target: 2, rule: 'direct' };
-        if (n === 3) return { gCount: 1, target: 1, rule: 'triangular' };
-        if (n === 4) return { gCount: 0, target: 4, rule: 'direct' };
-        if (n === 5) return { gCount: 1, target: 2, rule: 'top2' };
-        if (n === 6) return { gCount: 2, target: 2, rule: 'top1_each' };
+        if (n === 3) return { gCount: 1, target: 2, rule: 'top2' };
+        if (n === 4) {
+            if (state.n4Choice === 'semis') return { gCount: 1, target: 4, rule: 'custom', topN: 4, bestCount: 0 };
+            return { gCount: 1, target: 2, rule: 'top2' };
+        }
+        if (n === 5) return { gCount: 1, target: 4, rule: 'custom', topN: 4, bestCount: 0 };
+        if (n === 6) return { gCount: 2, target: 4, rule: 'top2' };
         if (n === 7) return { gCount: 2, target: 4, rule: 'top2' };
         if (n === 8) return { gCount: 2, target: 4, rule: 'top2' };
         if (n === 9) return { gCount: 2, target: 4, rule: 'top2' };
@@ -569,13 +572,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btnToBracket.classList.remove('hidden');
             btnMenuGroups.classList.remove('hidden');
             
-            if (state.participants.length === 3 || state.format === 'liga') {
-                 btnToBracket.classList.add('hidden'); // Triangular or Liga has no bracket
+            if (state.format === 'liga') {
+                 btnToBracket.classList.add('hidden'); // Liga has no bracket initially
                  btnMenuBracket.classList.add('hidden');
-                 if (state.format === 'liga') {
-                     btnMenuSetup.classList.add('hidden');
-                     btnMenuGroups.classList.add('hidden');
-                 }
+                 btnMenuSetup.classList.add('hidden');
+                 btnMenuGroups.classList.add('hidden');
             } else {
                  if (state.format === 'champions' || state.format === 'copa') {
                      btnMenuBracket.classList.remove('hidden');
@@ -752,6 +753,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const groupsSubTitle = document.getElementById('groups-sub-title');
         const btnToBracketElement = document.getElementById('btn-to-bracket'); // Fallback direct fetch
         const btnLigaPlayoffsInline = document.getElementById('btn-liga-playoffs-inline');
+        const btnN4Semis = document.getElementById('btn-n4-semis');
+        const btnN4Final = document.getElementById('btn-n4-final');
+
+        if (btnN4Semis) btnN4Semis.classList.add('hidden');
+        if (btnN4Final) btnN4Final.classList.add('hidden');
 
         if (state.format === 'liga') {
             if (groupsMainTitle) groupsMainTitle.textContent = state.name ? state.name.toUpperCase() : 'LIGA';
@@ -778,8 +784,21 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (groupsMainTitle) groupsMainTitle.textContent = 'FASE DE GRUPOS';
             if (groupsSubTitle) groupsSubTitle.textContent = 'RESULTADOS';
-            if (btnToBracketElement && state.participants.length > 3) btnToBracketElement.classList.remove('hidden');
             if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.add('hidden');
+            
+            const group = state.groups.length > 0 ? state.groups[0] : null;
+            const allMatchesPlayed = group && group.matches.length > 0 && group.matches.every(m => m.s1 !== null && m.s2 !== null);
+
+            if (state.format === 'champions' && state.participants.length === 4 && allMatchesPlayed && !state.bracketGenerated) {
+                if (btnToBracketElement) btnToBracketElement.classList.add('hidden');
+                if (btnN4Semis) btnN4Semis.classList.remove('hidden');
+                if (btnN4Final) btnN4Final.classList.remove('hidden');
+            } else {
+                if (btnToBracketElement && state.participants.length > 2) {
+                    btnToBracketElement.classList.remove('hidden');
+                    btnToBracketElement.textContent = state.bracketGenerated ? 'Ver Playoffs' : 'Ver Fase Eliminatoria';
+                }
+            }
         }
 
         // Logic to show floating badge if tournament is ended
@@ -1975,6 +1994,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 transitionLigaToCopa();
             }
+        });
+    }
+
+    const btnN4Semis = document.getElementById('btn-n4-semis');
+    if (btnN4Semis) {
+        btnN4Semis.addEventListener('click', () => {
+            if (state.isSpectator) return showToast('Modo Espectador: Acción no permitida 👁️');
+            state.n4Choice = 'semis';
+            if (!state.bracketGenerated) generateBracket();
+            showView(document.getElementById('bracket-view'));
+            if (typeof saveTournament === 'function') saveTournament();
+        });
+    }
+
+    const btnN4Final = document.getElementById('btn-n4-final');
+    if (btnN4Final) {
+        btnN4Final.addEventListener('click', () => {
+            if (state.isSpectator) return showToast('Modo Espectador: Acción no permitida 👁️');
+            state.n4Choice = 'final';
+            if (!state.bracketGenerated) generateBracket();
+            showView(document.getElementById('bracket-view'));
+            if (typeof saveTournament === 'function') saveTournament();
         });
     }
 
