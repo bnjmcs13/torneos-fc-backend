@@ -1169,6 +1169,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawBracket() {
+        if (state.format === 'copa') {
+            btnToGroups.classList.add('hidden');
+        } else {
+            btnToGroups.classList.remove('hidden');
+            if (state.format === 'liga') {
+                btnToGroups.textContent = 'Volver a la tabla';
+            } else {
+                btnToGroups.textContent = 'Volver a Grupos';
+            }
+        }
+        
         bracketContainer.innerHTML = '';
         if (!state.bracketRounds) return;
 
