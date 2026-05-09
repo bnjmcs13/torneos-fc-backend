@@ -1537,6 +1537,9 @@ body.theme-champions #bracket-view::before {
         justify-content: center;
         align-items: center;
     }
+    #bracket-format-select {
+        order: 99;
+    }
     .nav-titles {
         margin-bottom: 0.5rem;
     }

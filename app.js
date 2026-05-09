@@ -1834,6 +1834,12 @@ document.addEventListener('DOMContentLoaded', () => {
             input.style.opacity = '0.8';
         });
         
+        const formatSelect = document.getElementById('bracket-format-select');
+        if (formatSelect) {
+            formatSelect.disabled = true;
+            formatSelect.style.opacity = '0.8';
+        }
+        
         // Esconder botones de guardar/confirmar en el bracket
         document.querySelectorAll('.btn-bracket-save').forEach(btn => {
             btn.style.display = 'none';
@@ -1950,6 +1956,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bracketView = document.getElementById('bracket-view');
                 if (bracketView) showView(bracketView);
             } else {
+                if (state.isSpectator) {
+                    showToast('Modo Espectador: Acción no permitida 👁️');
+                    return;
+                }
                 transitionLigaToCopa();
             }
         });
