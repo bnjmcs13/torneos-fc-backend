@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const customChampionsConfig = document.getElementById('custom-champions-config');
     const manualRulesPanel = document.getElementById('manual-rules-panel');
-    let isManualConfigValid = true;
+    var isManualConfigValid = true;
     
     // Auto calculate when manual inputs change
     const _cg = document.getElementById('custom-groups');
