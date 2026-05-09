@@ -1206,9 +1206,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let title = 'Ronda';
             if (round.length === 1) title = 'Final';
-            else if (round.length === 2) title = 'Semifinales';
-            else if (round.length === 4) title = 'Cuartos';
-            else if (round.length === 8) title = 'Octavos';
+            else if (round.length === 2) title = 'Semifinal';
+            else if (round.length === 4) title = 'Cuartos de final';
+            else if (round.length === 8) title = 'Octavos de final';
+            else if (round.length === 16) title = '16avos de final';
+            else if (round.length === 32) title = '32avos de final';
 
             const h3 = document.createElement('h3');
             h3.style.color = 'var(--accent-silver)';
@@ -1223,6 +1225,17 @@ document.addEventListener('DOMContentLoaded', () => {
             round.forEach((m, mIdx) => {
                 const matchDiv = document.createElement('div');
                 matchDiv.className = 'bracket-match';
+                
+                const phaseLabel = document.createElement('div');
+                phaseLabel.style.fontSize = '0.75rem';
+                phaseLabel.style.color = '#FFD700';
+                phaseLabel.style.textAlign = 'center';
+                phaseLabel.style.marginBottom = '0.6rem';
+                phaseLabel.style.textTransform = 'uppercase';
+                phaseLabel.style.letterSpacing = '1px';
+                phaseLabel.style.fontWeight = 'bold';
+                phaseLabel.textContent = title;
+                matchDiv.appendChild(phaseLabel);
                 
                 const winnerObj = checkMatchWinner(m);
                 const isTie = winnerObj === 'tie';
