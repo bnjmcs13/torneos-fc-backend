@@ -579,6 +579,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             showView(groupsView);
         }
+        
+        // Guardar automáticamente para generar el código de torneo inmediatamente
+        if (typeof saveTournament === 'function') {
+            saveTournament();
+        }
     });
 
     function shuffle(array) {
@@ -748,14 +753,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const group = state.groups.length > 0 ? state.groups[0] : null;
             const allMatchesPlayed = group && group.matches.length > 0 && group.matches.every(m => m.s1 !== null && m.s2 !== null);
             
+            if (btnToBracketElement) btnToBracketElement.classList.add('hidden'); // Siempre oculto en liga, usamos btnLigaPlayoffsInline
+
             if (state.bracketGenerated) {
-                if (btnToBracketElement) btnToBracketElement.classList.remove('hidden');
-                if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.add('hidden');
+                if (btnLigaPlayoffsInline) {
+                    btnLigaPlayoffsInline.classList.remove('hidden');
+                    btnLigaPlayoffsInline.textContent = '🏆 Ver Playoffs';
+                }
             } else if (allMatchesPlayed) {
-                if (btnToBracketElement) btnToBracketElement.classList.add('hidden');
-                if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.remove('hidden');
+                if (btnLigaPlayoffsInline) {
+                    btnLigaPlayoffsInline.classList.remove('hidden');
+                    btnLigaPlayoffsInline.textContent = '🏆 Jugar Playoffs';
+                }
             } else {
-                if (btnToBracketElement) btnToBracketElement.classList.add('hidden');
                 if (btnLigaPlayoffsInline) btnLigaPlayoffsInline.classList.add('hidden');
             }
         } else {
@@ -1932,7 +1942,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const btnLigaPlayoffsInline = document.getElementById('btn-liga-playoffs-inline');
     if (btnLigaPlayoffsInline) {
-        btnLigaPlayoffsInline.addEventListener('click', transitionLigaToCopa);
+        btnLigaPlayoffsInline.addEventListener('click', () => {
+            if (state.bracketGenerated) {
+                const bracketView = document.getElementById('bracket-view');
+                if (bracketView) showView(bracketView);
+            } else {
+                transitionLigaToCopa();
+            }
+        });
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
