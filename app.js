@@ -362,38 +362,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const customChampionsConfig = document.getElementById('custom-champions-config');
     const manualRulesPanel = document.getElementById('manual-rules-panel');
-    const customGroupsInput = document.getElementById('custom-groups');
-    const customDirectInput = document.getElementById('custom-direct');
-    const customWildcardsInput = document.getElementById('custom-wildcards');
-    const customTotalTarget = document.getElementById('custom-total-target');
-    const customValidBanner = document.getElementById('custom-valid-banner');
-    const customErrorText = document.getElementById('custom-error-text');
-
     let isManualConfigValid = true;
     
     // Auto calculate when manual inputs change
-    if (customGroupsInput) customGroupsInput.addEventListener('input', calculateManualConfig);
-    if (customDirectInput) customDirectInput.addEventListener('input', calculateManualConfig);
-    if (customWildcardsInput) customWildcardsInput.addEventListener('input', calculateManualConfig);
+    const _cg = document.getElementById('custom-groups');
+    const _cd = document.getElementById('custom-direct');
+    const _cw = document.getElementById('custom-wildcards');
+    if (_cg) _cg.addEventListener('input', calculateManualConfig);
+    if (_cd) _cd.addEventListener('input', calculateManualConfig);
+    if (_cw) _cw.addEventListener('input', calculateManualConfig);
 
     function calculateManualConfig() {
-        const gCount = parseInt(customGroupsInput.value) || 0;
-        const direct = parseInt(customDirectInput.value) || 0;
-        const wild = parseInt(customWildcardsInput.value) || 0;
+        const cg = document.getElementById('custom-groups');
+        const cd = document.getElementById('custom-direct');
+        const cw = document.getElementById('custom-wildcards');
+        const customTotalTarget = document.getElementById('custom-total-target');
+        const customValidBanner = document.getElementById('custom-valid-banner');
+        const customErrorText = document.getElementById('custom-error-text');
+        
+        if (!cg || !cd || !cw) return;
+
+        const gCount = parseInt(cg.value) || 0;
+        const direct = parseInt(cd.value) || 0;
+        const wild = parseInt(cw.value) || 0;
 
         const total = (gCount * direct) + wild;
-        customTotalTarget.textContent = total;
+        if (customTotalTarget) customTotalTarget.textContent = total;
 
         const validTargets = [2, 4, 8, 16, 32];
         if (validTargets.includes(total)) {
-            customValidBanner.classList.remove('invalid');
-            customValidBanner.classList.add('valid');
-            customErrorText.classList.add('hidden');
+            if (customValidBanner) {
+                customValidBanner.classList.remove('invalid');
+                customValidBanner.classList.add('valid');
+            }
+            if (customErrorText) customErrorText.classList.add('hidden');
             isManualConfigValid = true;
         } else {
-            customValidBanner.classList.remove('valid');
-            customValidBanner.classList.add('invalid');
-            customErrorText.classList.remove('hidden');
+            if (customValidBanner) {
+                customValidBanner.classList.remove('valid');
+                customValidBanner.classList.add('invalid');
+            }
+            if (customErrorText) customErrorText.classList.remove('hidden');
             isManualConfigValid = false;
         }
     }
@@ -568,9 +577,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Save the exact user-defined config
-            const gCount = parseInt(customGroupsInput.value) || 0;
-            const topN = parseInt(customDirectInput.value) || 0;
-            const bestCount = parseInt(customWildcardsInput.value) || 0;
+            const gCount = parseInt(document.getElementById('custom-groups').value) || 0;
+            const topN = parseInt(document.getElementById('custom-direct').value) || 0;
+            const bestCount = parseInt(document.getElementById('custom-wildcards').value) || 0;
             const target = (gCount * topN) + bestCount;
             
             state.customConfig = {
