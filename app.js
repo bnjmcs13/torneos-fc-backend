@@ -1392,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.lastSaved = new Date().toLocaleString();
 
         try {
-            const response = await fetch('/api/tournaments', {
+            const response = await fetch('https://torneos-fc-backend.onrender.com/api/tournaments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(state)
@@ -1723,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', () => {
             joinErrorText.classList.add('hidden');
 
             try {
-                const response = await fetch(`/api/tournaments/${code}`);
+                const response = await fetch(`https://torneos-fc-backend.onrender.com/api/tournaments/${code}`);
                 const data = await response.json();
 
                 if (data.success) {

@@ -1,9 +1,11 @@
 from flask import Flask, send_from_directory, request, jsonify
+from flask_cors import CORS
 import os
 import string
 import random
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 import json
 
@@ -63,5 +65,5 @@ def run_app(port):
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 5000))
     run_app(port)
