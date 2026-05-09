@@ -891,7 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 groupsLegend.classList.add('hidden');
             } else {
                 groupsLegend.classList.remove('hidden');
-                if (cfg.rule === 'top1_and_best_2nds' || cfg.rule === 'best_overall') {
+                if (cfg.rule === 'top1_and_best_2nds' || cfg.rule === 'best_overall' || (cfg.rule === 'custom' && cfg.bestCount > 0)) {
                     legendWildcard.classList.remove('hidden');
                 } else {
                     legendWildcard.classList.add('hidden');
