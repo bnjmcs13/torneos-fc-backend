@@ -41,9 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('bracket-format-select').addEventListener('change', (e) => {
         state.knockoutFormat = e.target.value;
-        state.bracketGenerated = false;
         if (document.getElementById('bracket-view').classList.contains('active')) {
-            generateBracket();
+            if (state.format === 'liga') {
+                transitionLigaToCopa();
+            } else {
+                state.bracketGenerated = false;
+                generateBracket();
+                drawBracket();
+            }
+        } else {
+            state.bracketGenerated = false;
         }
     });
 
@@ -1869,10 +1876,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Slice top teams
         const topTeams = table.slice(0, targetSize).map(t => ({...t, qualType: 'direct'}));
-        
-        // Update format to copa
-        state.format = 'copa';
-        state.knockoutFormat = 'single'; // Default to single match elimination
         
         const roundsCount = Math.log2(targetSize);
         state.bracketRounds = [];
