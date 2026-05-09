@@ -1523,9 +1523,19 @@ body.theme-champions #bracket-view::before {
         text-align: center;
     }
     .view-controls, .bracket-controls {
-        flex-wrap: wrap;
+        flex-direction: column;
+        width: 100%;
+        gap: 0.8rem;
+    }
+    .view-controls button, .bracket-controls button, .bracket-controls select {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0.8rem !important;
+        font-size: 1rem !important;
+        box-sizing: border-box;
+        display: flex;
         justify-content: center;
-        gap: 0.5rem;
+        align-items: center;
     }
     .nav-titles {
         margin-bottom: 0.5rem;
