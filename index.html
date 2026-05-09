@@ -49,7 +49,12 @@
 
     <!-- Badge de Código Global -->
     <div id="global-share-badge" class="global-share-badge hidden" title="Comparte este código para Modo Espectador">
-        <span class="f-icon">👁️</span> Código: <strong id="global-code-text">---</strong>
+        <button id="btn-toggle-code" style="background:none; border:none; color:inherit; font:inherit; cursor:pointer; display:flex; align-items:center; gap:0.5rem; padding:0; outline:none;">
+            <span class="f-icon">👁️</span> <span id="toggle-code-text">Ver Código</span>
+        </button>
+        <span id="global-code-container" class="hidden" style="margin-left: 0.5rem; padding-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.2);">
+            <strong id="global-code-text">---</strong>
+        </span>
     </div>
 
     <div class="container">

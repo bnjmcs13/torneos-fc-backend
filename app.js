@@ -187,6 +187,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnMenuGroups = document.getElementById('btn-menu-groups');
     const btnMenuBracket = document.getElementById('btn-menu-bracket');
 
+    const btnToggleCode = document.getElementById('btn-toggle-code');
+    const toggleCodeText = document.getElementById('toggle-code-text');
+    const globalCodeContainer = document.getElementById('global-code-container');
+
+    if (btnToggleCode) {
+        btnToggleCode.addEventListener('click', () => {
+            if (globalCodeContainer.classList.contains('hidden')) {
+                globalCodeContainer.classList.remove('hidden');
+                toggleCodeText.textContent = 'Ocultar';
+            } else {
+                globalCodeContainer.classList.add('hidden');
+                toggleCodeText.textContent = 'Ver Código';
+            }
+        });
+    }
+
     btnMenuToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         dropdownMenu.classList.toggle('show');
