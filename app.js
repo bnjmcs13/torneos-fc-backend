@@ -407,9 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if (customGroupsInput) customGroupsInput.addEventListener('input', calculateManualConfig);
-    if (customDirectInput) customDirectInput.addEventListener('input', calculateManualConfig);
-    if (customWildcardsInput) customWildcardsInput.addEventListener('input', calculateManualConfig);
+    // Event listeners now managed above calculateManualConfig
 
     // Tournament Specifications Mapping
     function getFormatConfig(n) {
