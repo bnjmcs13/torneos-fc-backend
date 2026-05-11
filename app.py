@@ -7,22 +7,26 @@ import random
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+import urllib.request
 import json
 
-DATA_FILE = 'torneos.json'
+BLOB_ID = '019e14d1-c92a-716c-ba55-d4e712864ea1'
+BLOB_URL = f'https://jsonblob.com/api/jsonBlob/{BLOB_ID}'
 
 def load_tournaments():
-    if not os.path.exists(DATA_FILE):
-        return {}
     try:
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        req = urllib.request.Request(BLOB_URL, headers={'Accept': 'application/json'}, method='GET')
+        res = urllib.request.urlopen(req)
+        return json.loads(res.read().decode('utf-8'))
     except Exception:
         return {}
 
 def save_tournaments(data):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
+    try:
+        req = urllib.request.Request(BLOB_URL, data=json.dumps(data).encode('utf-8'), headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, method='PUT')
+        urllib.request.urlopen(req)
+    except Exception as e:
+        print("Error saving to JSONBlob:", e)
 
 @app.route('/')
 def index():
