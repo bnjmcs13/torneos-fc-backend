@@ -27,6 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveGroups = document.getElementById('btn-save-groups');
     const btnSaveBracket = document.getElementById('btn-save-bracket');
 
+    // Dynamic Backend URL based on host (local vs production)
+    function getBackendUrl() {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1' || host.includes('trycloudflare.com') || host.includes('vercel.app')) {
+            return '';
+        }
+        return 'https://torneos-fc-backend.onrender.com';
+    }
+
     // State
     const state = {
         id: null,
@@ -148,6 +157,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    let spectatorPollInterval = null;
+
+    function startSpectatorPolling() {
+        if (spectatorPollInterval) return; // already polling
+        if (!state.isSpectator || !state.shareCode) return;
+
+        console.log('Starting spectator polling for tournament code:', state.shareCode);
+        spectatorPollInterval = setInterval(async () => {
+            if (!state.isSpectator || !state.shareCode) {
+                stopSpectatorPolling();
+                return;
+            }
+            try {
+                const baseUrl = getBackendUrl();
+                const response = await fetch(`${baseUrl}/api/tournaments/${state.shareCode}`);
+                const data = await response.json();
+                if (data.success && data.tournament) {
+                    // Normalize to avoid superficial differences
+                    const oldStr = JSON.stringify({ ...state, isSpectator: null, lastSaved: null });
+                    const newStr = JSON.stringify({ ...data.tournament, isSpectator: null, lastSaved: null });
+                    
+                    if (oldStr !== newStr) {
+                        console.log('Spectator update received from server! Redrawing views...');
+                        const savedIsSpectator = state.isSpectator;
+                        for (let key in state) delete state[key];
+                        Object.assign(state, data.tournament);
+                        state.isSpectator = savedIsSpectator;
+
+                        // Redraw active view
+                        const currentView = document.querySelector('.view.active');
+                        if (currentView === groupsView && state.groups && state.groups.length > 0) {
+                            drawGroups();
+                        } else if (currentView === bracketView && (state.bracketGenerated || (state.bracketRounds && state.bracketRounds.length > 0))) {
+                            drawBracket();
+                        } else if (currentView === statsView) {
+                            calculateAndDrawStats();
+                        }
+                        
+                        if (typeof aplicarModoEspectador === 'function') aplicarModoEspectador();
+                        if (typeof updateGlobalBadge === 'function') updateGlobalBadge();
+                    }
+                }
+            } catch (err) {
+                console.error('Error polling tournament updates:', err);
+            }
+        }, 8000); // Check every 8 seconds
+    }
+
+    function stopSpectatorPolling() {
+        if (spectatorPollInterval) {
+            console.log('Stopping spectator polling');
+            clearInterval(spectatorPollInterval);
+            spectatorPollInterval = null;
+        }
+    }
+
     function showView(view, pushToHistory = true) {
         if (pushToHistory) {
             const currentView = document.querySelector('.view.active');
@@ -174,6 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 menuStatsBtn.classList.add('hidden');
             }
+        }
+        
+        // Start or stop spectator polling based on current view
+        if (state.isSpectator && (view === groupsView || view === bracketView || view === statsView)) {
+            startSpectatorPolling();
+        } else {
+            stopSpectatorPolling();
         }
         
         if (typeof aplicarModoEspectador === 'function') {
@@ -220,12 +292,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.btn-inline-code').forEach(btn => {
         btn.addEventListener('click', () => {
+            if (!state.shareCode) return;
             if (btn.dataset.showing === 'true') {
                 btn.textContent = '👁️ Ver Código';
                 btn.dataset.showing = 'false';
             } else {
                 btn.textContent = `👁️ ${state.shareCode}`;
                 btn.dataset.showing = 'true';
+
+                // Copiar enlace directo de espectador al portapapeles
+                const joinUrl = `${window.location.origin}${window.location.pathname}?join=${state.shareCode}`;
+                navigator.clipboard.writeText(joinUrl).then(() => {
+                    showToast('¡Enlace de Espectador copiado! 👁️📋');
+                }).catch(err => {
+                    console.error('Failed to copy direct spectator URL:', err);
+                    showToast(`Código: ${state.shareCode}`);
+                });
             }
         });
     });
@@ -1532,7 +1614,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.lastSaved = new Date().toLocaleString();
 
         try {
-            const response = await fetch('https://torneos-fc-backend.onrender.com/api/tournaments', {
+            const baseUrl = getBackendUrl();
+            const response = await fetch(`${baseUrl}/api/tournaments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(state)
@@ -1735,13 +1818,38 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Torneo eliminado 🗑️');
     }
 
-    window.loadTournament = function(id) {
+    window.loadTournament = async function(id) {
         let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
         const loadedState = stored.find(t => t.id === id);
         if (loadedState) {
+            let stateToLoad = loadedState;
+
+            // Si es modo espectador, descargar primero la versión fresca desde el backend
+            if (loadedState.isSpectator && loadedState.shareCode) {
+                showToast('Actualizando datos de espectador... 👁️');
+                try {
+                    const baseUrl = getBackendUrl();
+                    const response = await fetch(`${baseUrl}/api/tournaments/${loadedState.shareCode}`);
+                    const data = await response.json();
+                    if (data.success && data.tournament) {
+                        stateToLoad = data.tournament;
+                        stateToLoad.isSpectator = true; // Mantener la bandera de espectador
+                        
+                        // Actualizar la caché de almacenamiento local
+                        const idx = stored.findIndex(t => t.id === id);
+                        if (idx >= 0) stored[idx] = stateToLoad;
+                        localStorage.setItem('torneos-fc-data', JSON.stringify(stored));
+                        initHome();
+                    }
+                } catch (err) {
+                    console.error('Error fetching latest tournament state for spectator, using cached version:', err);
+                    showToast('Cargando copia local sin conexión ⚠️');
+                }
+            }
+
             // Restore state explicitly to keep memory reference to state object
             for (let key in state) delete state[key];
-            Object.assign(state, loadedState);
+            Object.assign(state, stateToLoad);
             
             // Sync UI Menus
             if (state.format === 'champions' || state.format === 'copa') {
@@ -1863,7 +1971,8 @@ document.addEventListener('DOMContentLoaded', () => {
             joinErrorText.classList.add('hidden');
 
             try {
-                const response = await fetch(`https://torneos-fc-backend.onrender.com/api/tournaments/${code}`);
+                const baseUrl = getBackendUrl();
+                const response = await fetch(`${baseUrl}/api/tournaments/${code}`);
                 const data = await response.json();
 
                 if (data.success) {
@@ -2112,6 +2221,71 @@ document.addEventListener('DOMContentLoaded', () => {
         deferredPrompt = null;
         hideInstallPromotion();
     });
+
+    // Verificar si se ha accedido a la app usando un enlace directo de espectador (?join=FC-XXXX)
+    async function checkAutoJoinUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const joinCode = params.get('join') || params.get('code');
+        if (joinCode) {
+            const code = joinCode.trim().toUpperCase();
+            showToast('Conectando al torneo... 👁️');
+            
+            try {
+                const baseUrl = getBackendUrl();
+                const response = await fetch(`${baseUrl}/api/tournaments/${code}`);
+                const data = await response.json();
+
+                if (data.success && data.tournament) {
+                    const tData = data.tournament;
+                    tData.isSpectator = true; // Activar el modo espectador
+                    
+                    // Limpiar estado e importar los nuevos datos
+                    for (let key in state) delete state[key];
+                    Object.assign(state, tData);
+                    
+                    // Limpiar el parámetro de la URL para que no moleste si recarga
+                    const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+                    window.history.replaceState({}, document.title, cleanUrl);
+
+                    // Configurar rutas del menú
+                    viewHistory.length = 0; 
+                    viewHistory.push(document.getElementById('home-view'));
+                    
+                    if (state.bracketRounds && state.bracketRounds.length > 0 && (!state.groups || state.groups.length === 0)) {
+                        drawBracket();
+                        showView(bracketView, false);
+                    } else if (state.groups && state.groups.length > 0) {
+                        drawGroups();
+                        if (state.bracketGenerated || (state.bracketRounds && state.bracketRounds.length > 0)) {
+                            drawBracket();
+                        }
+                        showView(groupsView, false);
+                    }
+                    
+                    showToast('Has entrado como Espectador 👁️');
+                    
+                    // Guardar en local storage para tenerlo disponible en "Mis Torneos"
+                    let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
+                    const existingIdx = stored.findIndex(t => t.id === state.id);
+                    if (existingIdx >= 0) {
+                        stored[existingIdx] = state;
+                    } else {
+                        stored.push(state);
+                    }
+                    localStorage.setItem('torneos-fc-data', JSON.stringify(stored));
+                    initHome();
+                } else {
+                    showToast('No se encontró el torneo especificado en el enlace ❌');
+                }
+            } catch (err) {
+                console.error('Error auto-joining:', err);
+                showToast('Error al conectar con el enlace de espectador ❌');
+            }
+        }
+    }
+
+    // Ejecutar comprobación en segundo plano tras inicializar la app
+    setTimeout(checkAutoJoinUrl, 200);
 
 });
 
