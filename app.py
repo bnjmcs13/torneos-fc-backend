@@ -223,22 +223,37 @@ def register():
 def login():
     try:
         data = request.json
-        email = data.get('email', '').strip().lower()
+        identifier = data.get('email', '').strip().lower()
         password = data.get('password', '')
         
-        if not email or not password:
-            return jsonify({"success": False, "message": "Email y contraseña requeridos"}), 400
+        if not identifier or not password:
+            return jsonify({"success": False, "message": "Identificador y contraseña requeridos"}), 400
             
         db = load_tournaments()
         users = db.get('_USERS_', {})
         
-        if email not in users or not check_password_hash(users[email]['password'], password):
+        matched_email = None
+        matched_user = None
+        
+        # Check if matched directly with registered email key
+        if identifier in users:
+            matched_email = identifier
+            matched_user = users[identifier]
+        else:
+            # Check if matched with username case-insensitively
+            for u_email, u_data in users.items():
+                if u_data.get('username', '').strip().lower() == identifier:
+                    matched_email = u_email
+                    matched_user = u_data
+                    break
+        
+        if not matched_user or not check_password_hash(matched_user['password'], password):
             return jsonify({"success": False, "message": "Correo o contraseña incorrectos"}), 401
             
         return jsonify({
             "success": True, 
-            "email": email, 
-            "username": users[email].get('username', email.split('@')[0]),
+            "email": matched_email, 
+            "username": matched_user.get('username', matched_email.split('@')[0]),
             "message": "Sesión iniciada correctamente"
         })
     except Exception as e:
