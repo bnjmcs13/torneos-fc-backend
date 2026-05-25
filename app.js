@@ -2636,6 +2636,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const table = getGroupTable(state.groups[0]);
         const totalTeams = table.length;
 
+        // Ocultar modal de campeón inmediatamente para que no tape la interfaz
+        const champModal = document.getElementById('champion-modal');
+        if (champModal) {
+            champModal.classList.add('hidden');
+        }
+
         const playoffsSetupModal = document.getElementById('playoffs-setup-modal');
         const playoffsTypeSelect = document.getElementById('playoffs-type-select');
         
