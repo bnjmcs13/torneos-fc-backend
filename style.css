@@ -685,6 +685,21 @@ tr:hover td {
     flex-direction: column;
     min-width: 280px;
 }
+.winner-bracket-box, .loser-bracket-box, .final-bracket-box {
+    transition: all 0.3s ease;
+}
+.winner-bracket-box:hover {
+    border-color: rgba(0, 240, 255, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.08) !important;
+}
+.loser-bracket-box:hover {
+    border-color: rgba(255, 77, 77, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(255, 77, 77, 0.08) !important;
+}
+.final-bracket-box:hover {
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.25) !important;
+    border-color: #FFD700 !important;
+}
 .bracket-column h3 {
     margin: 0;
 }

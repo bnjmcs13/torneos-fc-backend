@@ -1437,7 +1437,88 @@ document.addEventListener('DOMContentLoaded', () => {
             return match.p1 > match.p2 ? match.t1 : match.t2;
         }
 
-        return 'tie'; // indicates it's a tie but penalties not deciding yet
+        return 'tie'; // indicates it's a tie
+    }
+
+    function createMatchDOMElement(m, rIdx, mIdx) {
+        const matchDiv = document.createElement('div');
+        matchDiv.className = 'bracket-match';
+        
+        let calculatedTitle = 'Ronda';
+        const round = state.bracketRounds[rIdx];
+        const roundLen = round.length;
+        if (roundLen === 1) calculatedTitle = 'Final';
+        else if (roundLen === 2) calculatedTitle = 'Semifinal';
+        else if (roundLen === 4) calculatedTitle = 'Cuartos de final';
+        else if (roundLen === 8) calculatedTitle = 'Octavos de final';
+        else if (roundLen === 16) calculatedTitle = '16avos de final';
+        else if (roundLen === 32) calculatedTitle = '32avos de final';
+
+        const phaseLabel = document.createElement('div');
+        phaseLabel.style.fontSize = '0.75rem';
+        phaseLabel.style.color = '#FFD700';
+        phaseLabel.style.textAlign = 'center';
+        phaseLabel.style.marginBottom = '0.6rem';
+        phaseLabel.style.textTransform = 'uppercase';
+        phaseLabel.style.letterSpacing = '1px';
+        phaseLabel.style.fontWeight = 'bold';
+        phaseLabel.textContent = m.phase || calculatedTitle;
+        matchDiv.appendChild(phaseLabel);
+        
+        const winnerObj = checkMatchWinner(m);
+        const isTie = winnerObj === 'tie';
+        const isDouble = state.knockoutFormat === 'double';
+
+        let showPenalties = isTie || m.p1 !== null || m.p2 !== null;
+
+        let html = `
+            <div class="bracket-team ${winnerObj !== null && winnerObj !== 'tie' && winnerObj.id === (m.t1 && m.t1.id) ? 'winner' : ''}">
+                <span class="bracket-team-name">${m.t1 ? m.t1.name : 'TBD'}</span>
+                <div class="bracket-score">
+                    <div class="score-box">
+                        ${isDouble ? '<label>Ida</label>' : ''}
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1" value="${m.s1 !== null ? m.s1 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    ${isDouble ? `
+                    <div class="score-box">
+                        <label>Vta</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_v" value="${m.s1_v !== null ? m.s1_v : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
+                    ${showPenalties ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1" value="${m.p1 !== null ? m.p1 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="bracket-team-separator"></div>
+            <div class="bracket-team ${winnerObj !== null && winnerObj !== 'tie' && winnerObj.id === (m.t2 && m.t2.id) ? 'winner' : ''}">
+                <span class="bracket-team-name">${m.t2 ? m.t2.name : 'TBD'}</span>
+                <div class="bracket-score">
+                    <div class="score-box">
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2" value="${m.s2 !== null ? m.s2 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    ${isDouble ? `
+                    <div class="score-box">
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_v" value="${m.s2_v !== null ? m.s2_v : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
+                    ${showPenalties ? `
+                    <div class="score-box">
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2" value="${m.p2 !== null ? m.p2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:0.8rem; overflow:hidden; transition:max-height 0.3s;" style="max-height:${m.isFinished ? '0' : '40px'};">
+                <button class="btn-bracket-save" data-r="${rIdx}" data-m="${mIdx}" title="Confirmar Resultado" style="background:var(--primary-color); color:#fff; border-radius:4px; border:none; font-size:0.8rem; font-weight:bold; padding:0.4rem 1.2rem; cursor:pointer; opacity:${m.isFinished ? '0' : '1'}; pointer-events:${m.isFinished ? 'none' : 'auto'}; width:90%; box-shadow:0 4px 10px rgba(0,0,0,0.3);" ${m.isFinished ? 'disabled' : ''}>GUARDAR MARCADOR</button>
+            </div>
+        `;
+        matchDiv.innerHTML += html;
+        return matchDiv;
     }
 
     function drawBracket() {
@@ -1455,119 +1536,222 @@ document.addEventListener('DOMContentLoaded', () => {
         bracketContainer.innerHTML = '';
         if (!state.bracketRounds) return;
 
-        state.bracketRounds.forEach((round, rIdx) => {
-            const col = document.createElement('div');
-            col.className = 'bracket-column';
-            
-            let title = 'Ronda';
-            if (round.length === 1) title = 'Final';
-            else if (round.length === 2) title = 'Semifinal';
-            else if (round.length === 4) title = 'Cuartos de final';
-            else if (round.length === 8) title = 'Octavos de final';
-            else if (round.length === 16) title = '16avos de final';
-            else if (round.length === 32) title = '32avos de final';
+        if (state.bracketFormatType === 'advantage') {
+            // RENDER UNIFIED DOUBLE ELIMINATION BRACKET (UPPER & LOWER ALIGNED)
+            bracketContainer.style.display = 'flex';
+            bracketContainer.style.flexDirection = 'row';
+            bracketContainer.style.gap = '2.5rem';
+            bracketContainer.style.width = ''; // allow natural scrolling
+            bracketContainer.style.padding = '1rem';
+            bracketContainer.style.alignItems = 'stretch';
 
-            const h3 = document.createElement('h3');
-            h3.style.color = 'var(--accent-silver)';
-            h3.style.textAlign = 'center';
-            h3.style.marginBottom = '2rem';
-            h3.textContent = title;
-            col.appendChild(h3);
+            state.bracketRounds.forEach((round, rIdx) => {
+                const winnerMatches = round.filter(m => m.bracket === 'winner');
+                const loserMatches = round.filter(m => m.bracket === 'loser');
+                const finalMatches = round.filter(m => m.bracket === 'final');
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'matches-wrapper';
+                const col = document.createElement('div');
+                col.className = 'bracket-column';
+                col.style.display = 'flex';
+                col.style.flexDirection = 'column';
+                col.style.gap = '2rem';
+                col.style.minWidth = '300px';
 
-            round.forEach((m, mIdx) => {
-                const matchDiv = document.createElement('div');
-                matchDiv.className = 'bracket-match';
-                
-                const phaseLabel = document.createElement('div');
-                phaseLabel.style.fontSize = '0.75rem';
-                phaseLabel.style.color = '#FFD700';
-                phaseLabel.style.textAlign = 'center';
-                phaseLabel.style.marginBottom = '0.6rem';
-                phaseLabel.style.textTransform = 'uppercase';
-                phaseLabel.style.letterSpacing = '1px';
-                phaseLabel.style.fontWeight = 'bold';
-                phaseLabel.textContent = m.phase || title;
-                matchDiv.appendChild(phaseLabel);
-                
-                const winnerObj = checkMatchWinner(m);
-                const isTie = winnerObj === 'tie';
-                const isDouble = state.knockoutFormat === 'double';
+                // Column Header
+                let colTitle = `Ronda ${rIdx + 1}`;
+                if (finalMatches.length > 0) {
+                    colTitle = '👑 Gran Final';
+                } else if (rIdx === state.bracketRounds.length - 2) {
+                    const hasLoserFinal = loserMatches.some(m => m.phase === 'Final Loser Bracket');
+                    if (hasLoserFinal) colTitle = '🔥 Final Repechaje';
+                }
 
-                // We calculate global to show conditional Penalty Boxes
-                let showPenalties = isTie || m.p1 !== null || m.p2 !== null;
+                const colHeader = document.createElement('h3');
+                colHeader.style.color = 'var(--text-main)';
+                colHeader.style.textAlign = 'center';
+                colHeader.style.marginBottom = '0.5rem';
+                colHeader.style.fontSize = '1.1rem';
+                colHeader.style.fontWeight = 'bold';
+                colHeader.style.letterSpacing = '1px';
+                colHeader.style.textTransform = 'uppercase';
+                colHeader.textContent = colTitle;
+                col.appendChild(colHeader);
 
-                let html = `
-                    <div class="bracket-team ${winnerObj !== null && winnerObj !== 'tie' && winnerObj.id === (m.t1 && m.t1.id) ? 'winner' : ''}">
-                        <span class="bracket-team-name">${m.t1 ? m.t1.name : 'TBD'}</span>
-                        <div class="bracket-score">
-                            <div class="score-box">
-                                ${isDouble ? '<label>Ida</label>' : ''}
-                                <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1" value="${m.s1 !== null ? m.s1 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
-                            </div>
-                            ${isDouble ? `
-                            <div class="score-box">
-                                <label>Vta</label>
-                                <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_v" value="${m.s1_v !== null ? m.s1_v : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
-                            </div>
-                            ` : ''}
-                            ${showPenalties ? `
-                            <div class="score-box">
-                                <label style="color:#FFD700">PEN</label>
-                                <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1" value="${m.p1 !== null ? m.p1 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div class="bracket-team-separator"></div>
-                    <div class="bracket-team ${winnerObj !== null && winnerObj !== 'tie' && winnerObj.id === (m.t2 && m.t2.id) ? 'winner' : ''}">
-                        <span class="bracket-team-name">${m.t2 ? m.t2.name : 'TBD'}</span>
-                        <div class="bracket-score">
-                            <div class="score-box">
-                                <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2" value="${m.s2 !== null ? m.s2 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
-                            </div>
-                            ${isDouble ? `
-                            <div class="score-box">
-                                <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_v" value="${m.s2_v !== null ? m.s2_v : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
-                            </div>
-                            ` : ''}
-                            ${showPenalties ? `
-                            <div class="score-box">
-                                <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2" value="${m.p2 !== null ? m.p2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
+                // 1. Winner Matches Box
+                if (winnerMatches.length > 0) {
+                    const winnerBox = document.createElement('div');
+                    winnerBox.className = 'winner-bracket-box';
+                    winnerBox.style.background = 'rgba(0, 240, 255, 0.03)';
+                    winnerBox.style.border = '1px solid rgba(0, 240, 255, 0.15)';
+                    winnerBox.style.borderRadius = '8px';
+                    winnerBox.style.padding = '1rem 0.5rem';
+                    winnerBox.style.display = 'flex';
+                    winnerBox.style.flexDirection = 'column';
+                    winnerBox.style.gap = '1.5rem';
+                    winnerBox.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
                     
-                    <div style="text-align:center; margin-top:0.8rem; overflow:hidden; transition:max-height 0.3s;" style="max-height:${m.isFinished ? '0' : '40px'};">
-                        <button class="btn-bracket-save" data-r="${rIdx}" data-m="${mIdx}" title="Confirmar Resultado" style="background:var(--primary-color); color:#fff; border-radius:4px; border:none; font-size:0.8rem; font-weight:bold; padding:0.4rem 1.2rem; cursor:pointer; opacity:${m.isFinished ? '0' : '1'}; pointer-events:${m.isFinished ? 'none' : 'auto'}; width:90%; box-shadow:0 4px 10px rgba(0,0,0,0.3);" ${m.isFinished ? 'disabled' : ''}>GUARDAR MARCADOR</button>
-                    </div>
-                `;
-                matchDiv.innerHTML = html;
-                wrapper.appendChild(matchDiv);
-            });
-            col.appendChild(wrapper);
-            bracketContainer.appendChild(col);
-        });
+                    const label = document.createElement('div');
+                    label.style.color = '#00F0FF';
+                    label.style.fontSize = '0.75rem';
+                    label.style.fontWeight = 'bold';
+                    label.style.textAlign = 'center';
+                    label.style.letterSpacing = '1px';
+                    label.style.marginBottom = '0.5rem';
+                    label.textContent = '🏆 CUADRO PRINCIPAL';
+                    winnerBox.appendChild(label);
 
-        // Add Champion Column if final has a winner
-        if (state.bracketRounds.length > 0) {
-            const finalRound = state.bracketRounds[state.bracketRounds.length - 1];
-            if (finalRound && finalRound.length === 1) {
-                const finalMatch = finalRound[0];
-                const champion = checkMatchWinner(finalMatch);
-                if (champion && champion !== 'tie') {
-                    const col = document.createElement('div');
-                    col.className = 'bracket-column champion-column';
-                    col.innerHTML = `
-                        <h3 style="color:var(--text-main);text-align:center;margin-bottom:2rem;text-shadow: 0 0 10px gold; font-size: 1.5rem;">🏆 CAMPEÓN 🏆</h3>
-                        <div class="champion-card">
-                            <h2>${champion.name}</h2>
-                        </div>
-                    `;
-                    bracketContainer.appendChild(col);
+                    winnerMatches.forEach((m) => {
+                        const mIdx = round.indexOf(m);
+                        const matchDiv = createMatchDOMElement(m, rIdx, mIdx);
+                        winnerBox.appendChild(matchDiv);
+                    });
+                    col.appendChild(winnerBox);
+                } else if (finalMatches.length === 0) {
+                    // Spacer to keep vertical alignment for columns without winner matches
+                    const spacer = document.createElement('div');
+                    spacer.style.flex = '1';
+                    col.appendChild(spacer);
+                }
+
+                // 2. Loser Matches Box
+                if (loserMatches.length > 0) {
+                    const loserBox = document.createElement('div');
+                    loserBox.className = 'loser-bracket-box';
+                    loserBox.style.background = 'rgba(255, 77, 77, 0.03)';
+                    loserBox.style.border = '1px solid rgba(255, 77, 77, 0.15)';
+                    loserBox.style.borderRadius = '8px';
+                    loserBox.style.padding = '1rem 0.5rem';
+                    loserBox.style.display = 'flex';
+                    loserBox.style.flexDirection = 'column';
+                    loserBox.style.gap = '1.5rem';
+                    loserBox.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+                    
+                    const label = document.createElement('div');
+                    label.style.color = '#ff4d4d';
+                    label.style.fontSize = '0.75rem';
+                    label.style.fontWeight = 'bold';
+                    label.style.textAlign = 'center';
+                    label.style.letterSpacing = '1px';
+                    label.style.marginBottom = '0.5rem';
+                    label.textContent = '☠️ REPECHAJE';
+                    loserBox.appendChild(label);
+
+                    loserMatches.forEach((m) => {
+                        const mIdx = round.indexOf(m);
+                        const matchDiv = createMatchDOMElement(m, rIdx, mIdx);
+                        loserBox.appendChild(matchDiv);
+                    });
+                    col.appendChild(loserBox);
+                }
+
+                // 3. Final Match Box
+                if (finalMatches.length > 0) {
+                    const finalBox = document.createElement('div');
+                    finalBox.className = 'final-bracket-box';
+                    finalBox.style.background = 'rgba(255, 215, 0, 0.04)';
+                    finalBox.style.border = '2px solid #FFD700';
+                    finalBox.style.borderRadius = '12px';
+                    finalBox.style.padding = '1.5rem 1rem';
+                    finalBox.style.display = 'flex';
+                    finalBox.style.flexDirection = 'column';
+                    finalBox.style.gap = '1.5rem';
+                    finalBox.style.alignItems = 'center';
+                    finalBox.style.boxShadow = '0 0 25px rgba(255, 215, 0, 0.1)';
+                    
+                    const label = document.createElement('div');
+                    label.style.color = '#FFD700';
+                    label.style.fontSize = '0.85rem';
+                    label.style.fontWeight = 'bold';
+                    label.style.textAlign = 'center';
+                    label.style.letterSpacing = '2px';
+                    label.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.4)';
+                    label.textContent = '👑 GRAN FINAL';
+                    finalBox.appendChild(label);
+
+                    finalMatches.forEach((m) => {
+                        const mIdx = round.indexOf(m);
+                        const matchDiv = createMatchDOMElement(m, rIdx, mIdx);
+                        finalBox.appendChild(matchDiv);
+                    });
+                    col.appendChild(finalBox);
+
+                    // Add Champion card inside the final column if determined
+                    const finalMatch = finalMatches[0];
+                    const champion = checkMatchWinner(finalMatch);
+                    if (champion && champion !== 'tie') {
+                        const champCardDiv = document.createElement('div');
+                        champCardDiv.className = 'champion-column';
+                        champCardDiv.style.borderLeft = 'none';
+                        champCardDiv.style.paddingLeft = '0';
+                        champCardDiv.style.marginLeft = '0';
+                        champCardDiv.style.marginTop = '1rem';
+                        champCardDiv.style.width = '100%';
+                        champCardDiv.innerHTML = `
+                            <h3 style="color:#FFD700;text-align:center;margin-bottom:1rem;text-shadow: 0 0 15px gold; font-size: 1.1rem; font-weight:bold; letter-spacing:1px; animation: pulse 2.5s infinite;">🏆 CAMPEÓN DEFINITIVO 🏆</h3>
+                            <div class="champion-card" style="background:linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(245, 127, 23, 0.15)); border:2px solid #FFD700; box-shadow:0 0 20px rgba(255,215,0,0.25); border-radius:12px; padding:1.5rem; text-align:center; min-height:auto; min-width:auto;">
+                                <h2 style="color:#fff; margin:0; font-size:1.5rem; font-family:\'Outfit\', sans-serif; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.5);">${champion.name}</h2>
+                            </div>
+                        `;
+                        col.appendChild(champCardDiv);
+                    }
+                }
+
+                bracketContainer.appendChild(col);
+            });
+        } else {
+            // RENDER STANDARD SINGLE/DOUBLE ELIMINATION
+            bracketContainer.style.display = 'flex';
+            bracketContainer.style.flexDirection = 'row';
+            bracketContainer.style.gap = '1.5rem';
+            bracketContainer.style.width = '';
+            
+            state.bracketRounds.forEach((round, rIdx) => {
+                const col = document.createElement('div');
+                col.className = 'bracket-column';
+                
+                let title = 'Ronda';
+                if (round.length === 1) title = 'Final';
+                else if (round.length === 2) title = 'Semifinal';
+                else if (round.length === 4) title = 'Cuartos de final';
+                else if (round.length === 8) title = 'Octavos de final';
+                else if (round.length === 16) title = '16avos de final';
+                else if (round.length === 32) title = '32avos de final';
+
+                const h3 = document.createElement('h3');
+                h3.style.color = 'var(--accent-silver)';
+                h3.style.textAlign = 'center';
+                h3.style.marginBottom = '2rem';
+                h3.textContent = title;
+                col.appendChild(h3);
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'matches-wrapper';
+
+                round.forEach((m, mIdx) => {
+                    const matchDiv = createMatchDOMElement(m, rIdx, mIdx);
+                    wrapper.appendChild(matchDiv);
+                });
+                col.appendChild(wrapper);
+                bracketContainer.appendChild(col);
+            });
+
+            // Add Champion Column if final has a winner
+            if (state.bracketRounds.length > 0) {
+                const finalRound = state.bracketRounds[state.bracketRounds.length - 1];
+                if (finalRound && finalRound.length === 1) {
+                    const finalMatch = finalRound[0];
+                    const champion = checkMatchWinner(finalMatch);
+                    if (champion && champion !== 'tie') {
+                        const col = document.createElement('div');
+                        col.className = 'bracket-column champion-column';
+                        col.innerHTML = `
+                            <h3 style="color:var(--text-main);text-align:center;margin-bottom:2rem;text-shadow: 0 0 10px gold; font-size: 1.5rem;">🏆 CAMPEÓN 🏆</h3>
+                            <div class="champion-card">
+                                <h2>${champion.name}</h2>
+                            </div>
+                        `;
+                        bracketContainer.appendChild(col);
+                    }
                 }
             }
         }
@@ -2303,125 +2487,125 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetSize === 4) {
             // Round 0
             rounds.push([
-                { id: 'R0-M0', phase: 'Winner Play-In (B vs C)', t1: topTeams[1] || null, t2: topTeams[2] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M1', nextLoserMatchPos: 't2' }
+                { id: 'R0-M0', phase: 'Winner Ronda 1 (B vs C)', bracket: 'winner', t1: topTeams[1] || null, t2: topTeams[2] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M1', nextLoserMatchPos: 't2' }
             ]);
             // Round 1
             rounds.push([
-                { id: 'R1-M0', phase: 'Winner Semis (A vs Winner B/C)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M0', nextLoserMatchPos: 't2' },
-                { id: 'R1-M1', phase: 'Loser R1 (D vs Loser B/C)', t1: topTeams[3] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1' }
+                { id: 'R1-M0', phase: 'Winner Ronda 2 (A vs W1)', bracket: 'winner', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M0', nextLoserMatchPos: 't2' },
+                { id: 'R1-M1', phase: 'Loser Ronda 1 (D vs L1)', bracket: 'loser', t1: topTeams[3] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1' }
             ]);
             // Round 2
             rounds.push([
-                { id: 'R2-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
+                { id: 'R2-M0', phase: 'Final Loser Bracket', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
             ]);
             // Round 3
             rounds.push([
-                { id: 'R3-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+                { id: 'R3-M0', phase: 'Final', bracket: 'final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
             ]);
         } else if (targetSize === 5) {
             // Round 0
             rounds.push([
-                { id: 'R0-M0', phase: 'Winner Play-In (B vs C)', t1: topTeams[1] || null, t2: topTeams[2] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M1', nextLoserMatchPos: 't2' },
-                { id: 'R0-M1', phase: 'Loser Play-In (D vs E)', t1: topTeams[3] || null, t2: topTeams[4] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1' }
+                { id: 'R0-M0', phase: 'Winner Ronda 1 (B vs C)', bracket: 'winner', t1: topTeams[1] || null, t2: topTeams[2] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M1', nextLoserMatchPos: 't2' },
+                { id: 'R0-M1', phase: 'Loser Ronda 1 (D vs E)', bracket: 'loser', t1: topTeams[3] || null, t2: topTeams[4] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1' }
             ]);
             // Round 1
             rounds.push([
-                { id: 'R1-M0', phase: 'Winner Semis (A vs Winner B/C)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M0', nextLoserMatchPos: 't2' },
-                { id: 'R1-M1', phase: 'Loser R1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1' }
+                { id: 'R1-M0', phase: 'Winner Ronda 2 (A vs W1)', bracket: 'winner', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M0', nextLoserMatchPos: 't2' },
+                { id: 'R1-M1', phase: 'Loser Ronda 2', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1' }
             ]);
             // Round 2
             rounds.push([
-                { id: 'R2-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
+                { id: 'R2-M0', phase: 'Final Loser Bracket', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
             ]);
             // Round 3
             rounds.push([
-                { id: 'R3-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+                { id: 'R3-M0', phase: 'Final', bracket: 'final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
             ]);
         } else if (targetSize === 8) {
             // Round 0
             rounds.push([
-                { id: 'R0-M0', phase: 'Winner Play-In 1 (B vs H)', t1: topTeams[1] || null, t2: topTeams[7] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M2', nextLoserMatchPos: 't2' },
-                { id: 'R0-M1', phase: 'Winner Play-In 2 (C vs G)', t1: topTeams[2] || null, t2: topTeams[6] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1', nextLoserMatchId: 'R1-M3', nextLoserMatchPos: 't1' },
-                { id: 'R0-M2', phase: 'Winner Play-In 3 (D vs F)', t1: topTeams[3] || null, t2: topTeams[5] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't2', nextLoserMatchId: 'R1-M3', nextLoserMatchPos: 't2' }
+                { id: 'R0-M0', phase: 'Winner Ronda 1 (B vs H)', bracket: 'winner', t1: topTeams[1] || null, t2: topTeams[7] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M2', nextLoserMatchPos: 't2' },
+                { id: 'R0-M1', phase: 'Winner Ronda 1 (C vs G)', bracket: 'winner', t1: topTeams[2] || null, t2: topTeams[6] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1', nextLoserMatchId: 'R1-M3', nextLoserMatchPos: 't1' },
+                { id: 'R0-M2', phase: 'Winner Ronda 1 (D vs F)', bracket: 'winner', t1: topTeams[3] || null, t2: topTeams[5] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't2', nextLoserMatchId: 'R1-M3', nextLoserMatchPos: 't2' }
             ]);
             // Round 1
             rounds.push([
-                { id: 'R1-M0', phase: 'Winner Semis 1 (A vs Winner B/H)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M1', nextLoserMatchPos: 't1' },
-                { id: 'R1-M1', phase: 'Winner Semis 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't2', nextLoserMatchId: 'R2-M2', nextLoserMatchPos: 't1' },
-                { id: 'R1-M2', phase: 'Loser R1 Match 1 (E vs Loser B/H)', t1: topTeams[4] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M2', nextMatchPos: 't2' },
-                { id: 'R1-M3', phase: 'Loser R1 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't2' }
+                { id: 'R1-M0', phase: 'Winner Ronda 2 (A vs W1)', bracket: 'winner', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M1', nextLoserMatchPos: 't1' },
+                { id: 'R1-M1', phase: 'Winner Ronda 2 (M2)', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't2', nextLoserMatchId: 'R2-M2', nextLoserMatchPos: 't1' },
+                { id: 'R1-M2', phase: 'Loser Ronda 1 (E vs L1)', bracket: 'loser', t1: topTeams[4] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M2', nextMatchPos: 't2' },
+                { id: 'R1-M3', phase: 'Loser Ronda 1 (M2)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't2' }
             ]);
             // Round 2
             rounds.push([
-                { id: 'R2-M0', phase: 'Winner Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't1', nextLoserMatchId: 'R4-M0', nextLoserMatchPos: 't2' },
-                { id: 'R2-M1', phase: 'Loser R2 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1' },
-                { id: 'R2-M2', phase: 'Loser R2 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
+                { id: 'R2-M0', phase: 'Winner Final', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't1', nextLoserMatchId: 'R4-M0', nextLoserMatchPos: 't2' },
+                { id: 'R2-M1', phase: 'Loser Ronda 2 (M1)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1' },
+                { id: 'R2-M2', phase: 'Loser Ronda 2 (M2)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
             ]);
             // Round 3
             rounds.push([
-                { id: 'R3-M0', phase: 'Loser Semis', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't1' }
+                { id: 'R3-M0', phase: 'Loser Ronda 3', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't1' }
             ]);
             // Round 4
             rounds.push([
-                { id: 'R4-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't2' }
+                { id: 'R4-M0', phase: 'Final Loser Bracket', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't2' }
             ]);
             // Round 5
             rounds.push([
-                { id: 'R5-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+                { id: 'R5-M0', phase: 'Final', bracket: 'final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
             ]);
         } else if (targetSize === 16) {
             // Round 0
             rounds.push([
-                { id: 'R0-M0', phase: 'Winner Play-In 1 (B vs P)', t1: topTeams[1] || null, t2: topTeams[15] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M7', nextLoserMatchPos: 't2' },
-                { id: 'R0-M1', phase: 'Winner Play-In 2 (C vs O)', t1: topTeams[2] || null, t2: topTeams[14] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1', nextLoserMatchId: 'R1-M6', nextLoserMatchPos: 't1' },
-                { id: 'R0-M2', phase: 'Winner Play-In 3 (D vs N)', t1: topTeams[3] || null, t2: topTeams[13] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't2', nextLoserMatchId: 'R1-M6', nextLoserMatchPos: 't2' },
-                { id: 'R0-M3', phase: 'Winner Play-In 4 (E vs M)', t1: topTeams[4] || null, t2: topTeams[12] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M2', nextMatchPos: 't1', nextLoserMatchId: 'R1-M5', nextLoserMatchPos: 't1' },
-                { id: 'R0-M4', phase: 'Winner Play-In 5 (F vs L)', t1: topTeams[5] || null, t2: topTeams[11] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M2', nextMatchPos: 't2', nextLoserMatchId: 'R1-M5', nextLoserMatchPos: 't2' },
-                { id: 'R0-M5', phase: 'Winner Play-In 6 (G vs K)', t1: topTeams[6] || null, t2: topTeams[10] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M3', nextMatchPos: 't1', nextLoserMatchId: 'R1-M4', nextLoserMatchPos: 't1' },
-                { id: 'R0-M6', phase: 'Winner Play-In 7 (H vs J)', t1: topTeams[7] || null, t2: topTeams[9] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M3', nextMatchPos: 't2', nextLoserMatchId: 'R1-M4', nextLoserMatchPos: 't2' }
+                { id: 'R0-M0', phase: 'Winner Ronda 1 (B vs P)', bracket: 'winner', t1: topTeams[1] || null, t2: topTeams[15] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M7', nextLoserMatchPos: 't2' },
+                { id: 'R0-M1', phase: 'Winner Ronda 1 (C vs O)', bracket: 'winner', t1: topTeams[2] || null, t2: topTeams[14] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1', nextLoserMatchId: 'R1-M6', nextLoserMatchPos: 't1' },
+                { id: 'R0-M2', phase: 'Winner Ronda 1 (D vs N)', bracket: 'winner', t1: topTeams[3] || null, t2: topTeams[13] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't2', nextLoserMatchId: 'R1-M6', nextLoserMatchPos: 't2' },
+                { id: 'R0-M3', phase: 'Winner Ronda 1 (E vs M)', bracket: 'winner', t1: topTeams[4] || null, t2: topTeams[12] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M2', nextMatchPos: 't1', nextLoserMatchId: 'R1-M5', nextLoserMatchPos: 't1' },
+                { id: 'R0-M4', phase: 'Winner Ronda 1 (F vs L)', bracket: 'winner', t1: topTeams[5] || null, t2: topTeams[11] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M2', nextMatchPos: 't2', nextLoserMatchId: 'R1-M5', nextLoserMatchPos: 't2' },
+                { id: 'R0-M5', phase: 'Winner Ronda 1 (G vs K)', bracket: 'winner', t1: topTeams[6] || null, t2: topTeams[10] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M3', nextMatchPos: 't1', nextLoserMatchId: 'R1-M4', nextLoserMatchPos: 't1' },
+                { id: 'R0-M6', phase: 'Winner Ronda 1 (H vs J)', bracket: 'winner', t1: topTeams[7] || null, t2: topTeams[9] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M3', nextMatchPos: 't2', nextLoserMatchId: 'R1-M4', nextLoserMatchPos: 't2' }
             ]);
             // Round 1
             rounds.push([
-                { id: 'R1-M0', phase: 'Winner Quarters 1 (A vs W1)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M2', nextLoserMatchPos: 't1' },
-                { id: 'R1-M1', phase: 'Winner Quarters 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't2', nextLoserMatchId: 'R2-M3', nextLoserMatchPos: 't1' },
-                { id: 'R1-M2', phase: 'Winner Quarters 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't1', nextLoserMatchId: 'R2-M4', nextLoserMatchPos: 't1' },
-                { id: 'R1-M3', phase: 'Winner Quarters 4', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't2', nextLoserMatchId: 'R2-M5', nextLoserMatchPos: 't1' },
-                { id: 'R1-M4', phase: 'Loser R1 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M5', nextMatchPos: 't2' },
-                { id: 'R1-M5', phase: 'Loser R1 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M4', nextMatchPos: 't2' },
-                { id: 'R1-M6', phase: 'Loser R1 Match 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M3', nextMatchPos: 't2' },
-                { id: 'R1-M7', phase: 'Loser R1 Match 4 (I vs L1)', t1: topTeams[8] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M2', nextMatchPos: 't2' }
+                { id: 'R1-M0', phase: 'Winner Ronda 2 (A vs W1)', bracket: 'winner', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M2', nextLoserMatchPos: 't1' },
+                { id: 'R1-M1', phase: 'Winner Ronda 2 (M2)', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't2', nextLoserMatchId: 'R2-M3', nextLoserMatchPos: 't1' },
+                { id: 'R1-M2', phase: 'Winner Ronda 2 (M3)', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't1', nextLoserMatchId: 'R2-M4', nextLoserMatchPos: 't1' },
+                { id: 'R1-M3', phase: 'Winner Ronda 2 (M4)', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't2', nextLoserMatchId: 'R2-M5', nextLoserMatchPos: 't1' },
+                { id: 'R1-M4', phase: 'Loser Ronda 1 (M1)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M5', nextMatchPos: 't2' },
+                { id: 'R1-M5', phase: 'Loser Ronda 1 (M2)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M4', nextMatchPos: 't2' },
+                { id: 'R1-M6', phase: 'Loser Ronda 1 (M3)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M3', nextMatchPos: 't2' },
+                { id: 'R1-M7', phase: 'Loser Ronda 1 (I vs L1)', bracket: 'loser', t1: topTeams[8] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M2', nextMatchPos: 't2' }
             ]);
             // Round 2
             rounds.push([
-                { id: 'R2-M0', phase: 'Winner Semis 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R3-M1', nextLoserMatchPos: 't1' },
-                { id: 'R2-M1', phase: 'Winner Semis 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2', nextLoserMatchId: 'R3-M2', nextLoserMatchPos: 't1' },
-                { id: 'R2-M2', phase: 'Loser R2 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M3', nextMatchPos: 't1' },
-                { id: 'R2-M3', phase: 'Loser R2 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M3', nextMatchPos: 't2' },
-                { id: 'R2-M4', phase: 'Loser R2 Match 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M4', nextMatchPos: 't1' },
-                { id: 'R2-M5', phase: 'Loser R2 Match 4', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M4', nextMatchPos: 't2' }
+                { id: 'R2-M0', phase: 'Winner Ronda 3 (M1)', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R3-M1', nextLoserMatchPos: 't1' },
+                { id: 'R2-M1', phase: 'Winner Ronda 3 (M2)', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2', nextLoserMatchId: 'R3-M2', nextLoserMatchPos: 't1' },
+                { id: 'R2-M2', phase: 'Loser Ronda 2 (M1)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M3', nextMatchPos: 't1' },
+                { id: 'R2-M3', phase: 'Loser Ronda 2 (M2)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M3', nextMatchPos: 't2' },
+                { id: 'R2-M4', phase: 'Loser Ronda 2 (M3)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M4', nextMatchPos: 't1' },
+                { id: 'R2-M5', phase: 'Loser Ronda 2 (M4)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M4', nextMatchPos: 't2' }
             ]);
             // Round 3
             rounds.push([
-                { id: 'R3-M0', phase: 'Winner Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R7-M0', nextMatchPos: 't1', nextLoserMatchId: 'R6-M0', nextLoserMatchPos: 't2' },
-                { id: 'R3-M1', phase: 'Loser R3 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't1' },
-                { id: 'R3-M2', phase: 'Loser R3 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't2' },
-                { id: 'R3-M3', phase: 'Loser R3 Match 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't2' }
+                { id: 'R3-M0', phase: 'Winner Final', bracket: 'winner', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R7-M0', nextMatchPos: 't1', nextLoserMatchId: 'R6-M0', nextLoserMatchPos: 't2' },
+                { id: 'R3-M1', phase: 'Loser Ronda 3 (M1)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't1' },
+                { id: 'R3-M2', phase: 'Loser Ronda 3 (M2)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't2' },
+                { id: 'R3-M3', phase: 'Loser Ronda 3 (M3)', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't2' }
             ]);
             // Round 4
             rounds.push([
-                { id: 'R4-M0', phase: 'Loser R4', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't1' }
+                { id: 'R4-M0', phase: 'Loser Ronda 4', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't1' }
             ]);
             // Round 5
             rounds.push([
-                { id: 'R5-M0', phase: 'Loser Semis', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R6-M0', nextMatchPos: 't1' }
+                { id: 'R5-M0', phase: 'Loser Ronda 5', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R6-M0', nextMatchPos: 't1' }
             ]);
             // Round 6
             rounds.push([
-                { id: 'R6-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R7-M0', nextMatchPos: 't2' }
+                { id: 'R6-M0', phase: 'Final Loser Bracket', bracket: 'loser', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R7-M0', nextMatchPos: 't2' }
             ]);
             // Round 7
             rounds.push([
-                { id: 'R7-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+                { id: 'R7-M0', phase: 'Final', bracket: 'final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
             ]);
         } else if (targetSize === 32) {
             // Programmatic schema generator for N = 32
@@ -2441,12 +2625,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (m === 9 || m === 10) nextLoserMatch = 13;
                 else if (m === 11 || m === 12) nextLoserMatch = 14;
                 else if (m === 13 || m === 14) nextLoserMatch = 15;
-
                 const nextLoserPos = m === 0 ? 't1' : (m % 2 !== 0 ? 't1' : 't2');
-
                 r0.push({
                     id: `R0-M${m}`,
-                    phase: `Winner Play-In ${m+1}`,
+                    phase: `Winner Ronda 1 (M${m+1})`,
+                    bracket: 'winner',
                     t1: topTeams[t1Seed - 1] || null,
                     t2: topTeams[t2Seed - 1] || null,
                     s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
@@ -2464,7 +2647,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 0; m < 8; m++) {
                 r1.push({
                     id: `R1-M${m}`,
-                    phase: m === 0 ? `Winner Octavos 1 (A vs W1)` : `Winner Octavos ${m+1}`,
+                    phase: m === 0 ? `Winner Ronda 2 (A vs W1)` : `Winner Ronda 2 (M${m+1})`,
+                    bracket: 'winner',
                     t1: m === 0 ? topTeams[0] : null,
                     t2: null,
                     s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
@@ -2478,7 +2662,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 8; m < 16; m++) {
                 r1.push({
                     id: `R1-M${m}`,
-                    phase: `Loser R1 Match ${m - 7}`,
+                    phase: `Loser Ronda 1 (M${m - 7})`,
+                    bracket: 'loser',
                     t1: null,
                     t2: m === 8 ? topTeams[16] || null : null, 
                     s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
@@ -2494,7 +2679,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 0; m < 4; m++) {
                 r2.push({
                     id: `R2-M${m}`,
-                    phase: `Winner Quarters ${m+1}`,
+                    phase: `Winner Ronda 3 (M${m+1})`,
+                    bracket: 'winner',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: `R3-M${Math.floor(m / 2)}`,
                     nextMatchPos: m % 2 === 0 ? 't1' : 't2',
@@ -2506,7 +2692,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 4; m < 12; m++) {
                 r2.push({
                     id: `R2-M${m}`,
-                    phase: `Loser R2 Match ${m - 3}`,
+                    phase: `Loser Ronda 2 (M${m - 3})`,
+                    bracket: 'loser',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: `R3-M${Math.floor((m - 4) / 2) + 2}`, 
                     nextMatchPos: (m - 4) % 2 === 0 ? 't1' : 't2'
@@ -2520,7 +2707,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 0; m < 2; m++) {
                 r3.push({
                     id: `R3-M${m}`,
-                    phase: `Winner Semis ${m+1}`,
+                    phase: `Winner Ronda 4 (M${m+1})`,
+                    bracket: 'winner',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: 'R4-M0',
                     nextMatchPos: m === 0 ? 't1' : 't2',
@@ -2532,7 +2720,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 2; m < 6; m++) {
                 r3.push({
                     id: `R3-M${m}`,
-                    phase: `Loser R3 Match ${m - 1}`,
+                    phase: `Loser Ronda 3 (M${m - 1})`,
+                    bracket: 'loser',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: `R4-M${m - 1}`, 
                     nextMatchPos: 't2'
@@ -2546,6 +2735,7 @@ document.addEventListener('DOMContentLoaded', () => {
             r4.push({
                 id: 'R4-M0',
                 phase: 'Winner Final',
+                bracket: 'winner',
                 t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                 nextMatchId: 'R9-M0',
                 nextMatchPos: 't1',
@@ -2556,7 +2746,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 1; m < 5; m++) {
                 r4.push({
                     id: `R4-M${m}`,
-                    phase: `Loser R4 Match ${m}`,
+                    phase: `Loser Ronda 4 (M${m})`,
+                    bracket: 'loser',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: `R5-M${Math.floor((m - 1) / 2)}`, 
                     nextMatchPos: (m - 1) % 2 === 0 ? 't1' : 't2'
@@ -2570,7 +2761,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 0; m < 2; m++) {
                 r5.push({
                     id: `R5-M${m}`,
-                    phase: `Loser R5 Match ${m+1}`,
+                    phase: `Loser Ronda 5 (M${m+1})`,
+                    bracket: 'loser',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: `R6-M${m}`, 
                     nextMatchPos: 't2'
@@ -2584,7 +2776,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let m = 0; m < 2; m++) {
                 r6.push({
                     id: `R6-M${m}`,
-                    phase: `Loser Semis 1 Match ${m+1}`,
+                    phase: `Loser Ronda 6 (M${m+1})`,
+                    bracket: 'loser',
                     t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                     nextMatchId: 'R7-M0',
                     nextMatchPos: m === 0 ? 't1' : 't2'
@@ -2597,7 +2790,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Loser Semis 2 (M0)
             r7.push({
                 id: 'R7-M0',
-                phase: 'Loser Semis 2',
+                phase: 'Loser Ronda 7',
+                bracket: 'loser',
                 t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                 nextMatchId: 'R8-M0',
                 nextMatchPos: 't2'
@@ -2609,7 +2803,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Loser Final (M0)
             r8.push({
                 id: 'R8-M0',
-                phase: 'Loser Final',
+                phase: 'Final Loser Bracket',
+                bracket: 'loser',
                 t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
                 nextMatchId: 'R9-M0',
                 nextMatchPos: 't2'
@@ -2621,7 +2816,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Grand Final (M0)
             r9.push({
                 id: 'R9-M0',
-                phase: 'Grand Final',
+                phase: 'Final',
+                bracket: 'final',
                 t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null
             });
             rounds.push(r9);
@@ -2664,27 +2860,30 @@ document.addEventListener('DOMContentLoaded', () => {
         let sizes = [];
         if (selectedType === 'advantage') {
             sizes = [4, 5, 8, 16, 32];
+            playoffsQtySelect.disabled = false;
+            playoffsQtySelect.style.opacity = '1';
+            playoffsQtySelect.style.cursor = 'default';
         } else {
-            sizes = [2, 4, 8, 16, 32];
+            // Find maximum power of 2 that is <= totalTeams
+            const validPowers = [2, 4, 8, 16, 32];
+            let maxPower = 2;
+            for (let v of validPowers) {
+                if (v <= totalTeams) maxPower = v;
+            }
+            sizes = [maxPower];
+            playoffsQtySelect.disabled = true;
+            playoffsQtySelect.style.opacity = '0.6';
+            playoffsQtySelect.style.cursor = 'not-allowed';
         }
         
-        let added = false;
         sizes.forEach(size => {
             if (size <= totalTeams) {
                 const opt = document.createElement('option');
                 opt.value = size;
                 opt.textContent = `${size} Equipos`;
                 playoffsQtySelect.appendChild(opt);
-                added = true;
             }
         });
-        
-        if (!added) {
-            const opt = document.createElement('option');
-            opt.value = totalTeams;
-            opt.textContent = `${totalTeams} Equipos`;
-            playoffsQtySelect.appendChild(opt);
-        }
     }
 
     function updatePlayoffsInfoBanner(selectedType) {
