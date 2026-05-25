@@ -3,6 +3,8 @@ from flask_cors import CORS
 import os
 import string
 import random
+import secrets
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -139,6 +141,14 @@ def save_tournament():
                     break
         
         code = data['shareCode']
+        
+        # Enforce owner permissions
+        owner = data.get('owner')
+        if code in tournaments_db:
+            existing_owner = tournaments_db[code].get('owner')
+            if existing_owner and existing_owner != owner:
+                return jsonify({"success": False, "message": "No tienes permiso para modificar este torneo (pertenece a otro usuario)"}), 403
+                
         tournaments_db[code] = data
         save_tournaments(tournaments_db)
         
@@ -153,6 +163,121 @@ def get_tournament(code):
     if code in tournaments_db:
         return jsonify({"success": True, "tournament": tournaments_db[code]})
     return jsonify({"success": False, "message": "Torneo no encontrado"}), 404
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    try:
+        data = request.json
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({"success": False, "message": "Email y contraseña requeridos"}), 400
+        
+        db = load_tournaments()
+        if '_USERS_' not in db:
+            db['_USERS_'] = {}
+            
+        if email in db['_USERS_']:
+            return jsonify({"success": False, "message": "El correo electrónico ya está registrado"}), 400
+            
+        db['_USERS_'][email] = {
+            "password": generate_password_hash(password),
+            "reset_token": None
+        }
+        save_tournaments(db)
+        return jsonify({"success": True, "message": "Usuario registrado con éxito"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    try:
+        data = request.json
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({"success": False, "message": "Email y contraseña requeridos"}), 400
+            
+        db = load_tournaments()
+        users = db.get('_USERS_', {})
+        
+        if email not in users or not check_password_hash(users[email]['password'], password):
+            return jsonify({"success": False, "message": "Correo o contraseña incorrectos"}), 401
+            
+        return jsonify({
+            "success": True, 
+            "email": email, 
+            "message": "Sesión iniciada correctamente"
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    try:
+        data = request.json
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return jsonify({"success": False, "message": "Email requerido"}), 400
+            
+        db = load_tournaments()
+        users = db.get('_USERS_', {})
+        
+        if email not in users:
+            return jsonify({
+                "success": True, 
+                "message": "Si el correo está registrado, se enviará un enlace de restauración."
+            })
+            
+        # Generar token aleatorio
+        token = secrets.token_hex(16)
+        db['_USERS_'][email]['reset_token'] = token
+        save_tournaments(db)
+        
+        # Enlace de simulación estético
+        reset_link = f"{request.host_url}?reset_email={email}&reset_token={token}"
+        print(f"\n==================================================")
+        print(f"ENLACE SIMULADO DE RECUPERACIÓN PARA {email}:")
+        print(f"-> {reset_link} <-")
+        print(f"==================================================\n")
+        
+        return jsonify({
+            "success": True,
+            "message": "Se ha enviado un enlace de restauración.",
+            "debug_reset_link": reset_link
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    try:
+        data = request.json
+        email = data.get('email', '').strip().lower()
+        token = data.get('token', '')
+        new_password = data.get('new_password', '')
+        
+        if not email or not token or not new_password:
+            return jsonify({"success": False, "message": "Datos incompletos"}), 400
+            
+        db = load_tournaments()
+        users = db.get('_USERS_', {})
+        
+        if email not in users or users[email].get('reset_token') != token:
+            return jsonify({"success": False, "message": "Token de restauración inválido o expirado"}), 400
+            
+        # Actualizar contraseña
+        db['_USERS_'][email]['password'] = generate_password_hash(new_password)
+        db['_USERS_'][email]['reset_token'] = None
+        save_tournaments(db)
+        
+        return jsonify({"success": True, "message": "Contraseña restablecida con éxito"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 def run_app(port):
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)

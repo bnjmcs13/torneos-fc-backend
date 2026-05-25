@@ -27,6 +27,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveGroups = document.getElementById('btn-save-groups');
     const btnSaveBracket = document.getElementById('btn-save-bracket');
 
+    // Auth DOM Elements
+    const btnProfileToggle = document.getElementById('btn-profile-toggle');
+    const profileDropdownMenu = document.getElementById('profile-dropdown-menu');
+    const profileInfoBlock = document.getElementById('profile-info-block');
+    const btnProfileLogin = document.getElementById('btn-profile-login');
+    const btnProfileLogout = document.getElementById('btn-profile-logout');
+    const profileBtnText = document.getElementById('profile-btn-text');
+    
+    const authModal = document.getElementById('auth-modal');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    const formForgot = document.getElementById('form-forgot');
+    const linkForgotPassword = document.getElementById('link-forgot-password');
+    const btnForgotBack = document.getElementById('btn-forgot-back');
+    const btnCloseAuth = document.getElementById('btn-close-auth');
+    
+    const resetPasswordModal = document.getElementById('reset-password-modal');
+    const formResetPassword = document.getElementById('form-reset-password');
+    const resetEmailHidden = document.getElementById('reset-email-hidden');
+    const resetTokenHidden = document.getElementById('reset-token-hidden');
+    
+    const simulatedMailbox = document.getElementById('simulated-mailbox');
+    const mailboxTargetEmail = document.getElementById('mailbox-target-email');
+    const mailboxResetLink = document.getElementById('mailbox-reset-link');
+    const btnCloseMailbox = document.getElementById('btn-close-mailbox');
+    
+    // Saved view search and filter DOM elements
+    const savedSearchInput = document.getElementById('saved-search-input');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+
     // Dynamic Backend URL based on host (local vs production)
     function getBackendUrl() {
         const host = window.location.hostname;
@@ -202,8 +235,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error('Error polling tournament updates:', err);
             }
-        }, 8000); // Check every 8 seconds
+        }, 4000); // Check every 4 seconds
     }
+
 
     function stopSpectatorPolling() {
         if (spectatorPollInterval) {
@@ -256,10 +290,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Reset Setup View for a new tournament
+    function resetTournamentSetup() {
+        console.log('Resetting tournament setup state and inputs...');
+        
+        // Reset state object
+        state.id = null;
+        state.name = '';
+        state.format = 'champions';
+        state.knockoutFormat = 'single';
+        state.participants = [];
+        state.groups = [];
+        state.bracketRounds = [];
+        state.bracketGenerated = false;
+        state.shareCode = null;
+        state.isSpectator = false;
+        state.celebratedLiga = false;
+        state.celebratedCopa = false;
+        state.customConfig = null;
+        
+        // Reset DOM Inputs
+        const tournamentNameInput = document.getElementById('tournament-name');
+        if (tournamentNameInput) tournamentNameInput.value = '';
+        
+        if (numPlayersInput) numPlayersInput.value = '16';
+        
+        const customGroups = document.getElementById('custom-groups');
+        if (customGroups) customGroups.value = '4';
+        
+        const customDirect = document.getElementById('custom-direct');
+        if (customDirect) customDirect.value = '2';
+        
+        const customWildcards = document.getElementById('custom-wildcards');
+        if (customWildcards) customWildcards.value = '0';
+        
+        const copaScheduleSelect = document.getElementById('copa-schedule-select');
+        if (copaScheduleSelect) copaScheduleSelect.value = 'single';
+        
+        const leagueScheduleSelect = document.getElementById('league-schedule-select');
+        if (leagueScheduleSelect) leagueScheduleSelect.value = 'double';
+        
+        const leagueThemeSelect = document.getElementById('league-theme-select');
+        if (leagueThemeSelect) leagueThemeSelect.value = 'brasileirao';
+        
+        // Hide/show correct menu configs based on default format 'champions'
+        const headerTitle = setupView.querySelector('.champions-title');
+        if (headerTitle) headerTitle.textContent = 'CHAMPIONS LEAGUE';
+        
+        const customChampionsConfig = document.getElementById('custom-champions-config');
+        if (customChampionsConfig) customChampionsConfig.classList.remove('hidden');
+        
+        const leagueConfig = document.getElementById('league-config');
+        if (leagueConfig) leagueConfig.classList.add('hidden');
+        
+        const copaConfig = document.getElementById('copa-config');
+        if (copaConfig) copaConfig.classList.add('hidden');
+        
+        // Clear manual validation banner
+        isManualConfigValid = true;
+        const customValidBanner = document.getElementById('custom-valid-banner');
+        if (customValidBanner) {
+            customValidBanner.className = 'custom-valid-banner valid';
+            const customTotalTarget = document.getElementById('custom-total-target');
+            if (customTotalTarget) customTotalTarget.textContent = '8';
+        }
+        const customErrorText = document.getElementById('custom-error-text');
+        if (customErrorText) customErrorText.classList.add('hidden');
+        
+        // Remove active class from menu buttons
+        btnMenuSetup.classList.add('hidden');
+        btnMenuGroups.classList.add('hidden');
+        btnMenuBracket.classList.add('hidden');
+        
+        // Re-render empty inputs
+        renderPlayerInputs();
+        
+        // Apply theme
+        window.updateAppTheme();
+    }
+
+    // Call it immediately on startup to ensure a clean slate
+    resetTournamentSetup();
+
     // Home & Format Navigation
     btnCreateTournament.addEventListener('click', () => {
+        resetTournamentSetup();
         viewHistory.length = 0; 
-        viewHistory.push(homeView); // Permite volver al home si deciden no crear el torneo
+        viewHistory.push(homeView); 
         showView(formatView, false);
     });
 
@@ -330,11 +447,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnMenuNew.addEventListener('click', () => {
+        resetTournamentSetup();
         viewHistory.length = 0;
         viewHistory.push(homeView);
         showView(formatView, false);
         dropdownMenu.classList.remove('show');
     });
+
 
     btnMenuSaved.addEventListener('click', () => {
         renderSavedTournaments();
@@ -1156,6 +1275,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (res) res.focus();
                     }
 
+                    // Auto-save tournament state to sync in real-time with spectators
+                    saveTournament();
+
+
                     // Validation for League Champion Celebration
                     if (state.format === 'liga' && state.groups.length > 0) {
                         const group = state.groups[0];
@@ -1540,6 +1663,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (res) res.focus();
                     }
 
+                    // Auto-save tournament state to sync in real-time with spectators
+                    saveTournament();
+
+
                     // Validation for Copa/Bracket Champion Celebration & Auto-Save
                     const finalRound = state.bracketRounds[state.bracketRounds.length - 1];
                     if (finalRound && finalRound.length === 1) {
@@ -1613,6 +1740,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         state.lastSaved = new Date().toLocaleString();
 
+        // Attach owner if logged in
+        const activeUser = localStorage.getItem('torneos-fc-user');
+        if (activeUser) {
+            state.owner = activeUser;
+        } else {
+            delete state.owner;
+        }
+
         try {
             const baseUrl = getBackendUrl();
             const response = await fetch(`${baseUrl}/api/tournaments`, {
@@ -1640,6 +1775,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof updateGlobalBadge === 'function') updateGlobalBadge();
                 
                 initHome();
+            } else {
+                showToast(data.message || 'Error al guardar el torneo ❌');
             }
         } catch (err) {
             console.error(err);
@@ -1647,8 +1784,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     if (btnSaveGroups) btnSaveGroups.addEventListener('click', saveTournament);
     if (btnSaveBracket) btnSaveBracket.addEventListener('click', saveTournament);
+
+    // Global filter state
+    let activeFilter = 'all';
 
     window.renderSavedTournaments = function() {
         const container = document.getElementById('saved-list-container');
@@ -1670,23 +1811,92 @@ document.addEventListener('DOMContentLoaded', () => {
              return t2 - t1;
         });
 
-        stored.forEach(t => {
+        const activeUser = localStorage.getItem('torneos-fc-user');
+        const searchTerm = savedSearchInput ? savedSearchInput.value.toLowerCase().trim() : '';
+
+        // Filter tournaments based on search and selected filter button
+        const filtered = stored.filter(t => {
+            // Search filter
+            const matchesSearch = !searchTerm || (t.name && t.name.toLowerCase().includes(searchTerm));
+            if (!matchesSearch) return false;
+
+            // Category filter
+            const isOwner = t.owner && activeUser && t.owner.toLowerCase() === activeUser.toLowerCase();
+            if (activeFilter === 'owned') return isOwner;
+            if (activeFilter === 'spectator') return t.isSpectator;
+            if (activeFilter === 'champions') return t.format === 'champions';
+            if (activeFilter === 'liga') return t.format === 'liga';
+            if (activeFilter === 'copa') return t.format === 'copa';
+
+            return true; // 'all'
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p class="empty-saved" style="grid-column: 1/-1;">No se encontraron torneos con los filtros seleccionados.</p>';
+            return;
+        }
+
+        filtered.forEach(t => {
             const card = document.createElement('div');
-            card.className = 'saved-card';
+            const isOwner = t.owner && activeUser && t.owner.toLowerCase() === activeUser.toLowerCase();
+            const isSpectator = t.isSpectator;
+            card.className = `saved-card ${isSpectator ? 'spectator-card' : ''}`;
             
             let formatText = 'Desconocido';
             let icon = '⚽';
             if (t.format === 'champions') { formatText = 'Champions'; icon = '⭐'; }
             if (t.format === 'liga') { formatText = 'Modo Liga'; icon = '🏆'; }
             if (t.format === 'copa') { formatText = 'Copa'; icon = '⚔️'; }
-            
+
+            // Progress calculation
+            let totalMatches = 0;
+            let finishedMatches = 0;
+            if (t.groups) {
+                t.groups.forEach(g => {
+                    if (g.matches) {
+                        totalMatches += g.matches.length;
+                        finishedMatches += g.matches.filter(m => m.isFinished).length;
+                    }
+                });
+            }
+            if (t.bracketRounds) {
+                t.bracketRounds.forEach(r => {
+                    totalMatches += r.length;
+                    finishedMatches += r.filter(m => m.isFinished).length;
+                });
+            }
+            const progressPercent = totalMatches > 0 ? Math.round((finishedMatches / totalMatches) * 100) : 0;
+
+            // Badges
+            let roleBadge = '';
+            if (isOwner) {
+                roleBadge = '<span class="badge-role owner">👑 Creador</span>';
+            } else if (isSpectator) {
+                roleBadge = '<span class="badge-role spectator">👁️ Espectador</span>';
+            }
+
             card.innerHTML = `
                 <div class="saved-card-info">
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                        ${roleBadge}
+                    </div>
                     <h3 class="saved-card-title">${icon} ${t.name || 'Torneo sin nombre'}</h3>
                     <div class="saved-card-details">
                         <span>Formato: <strong>${formatText}</strong></span>
                         <span>Equipos: <strong>${t.participants ? t.participants.length : 0}</strong></span>
+                        <span>Código: <strong>${t.shareCode || 'Sin código'}</strong></span>
                         <span>Guardado: <strong>${t.lastSaved || 'Desconocido'}</strong></span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="saved-card-progress">
+                        <div class="progress-text">
+                            <span>Progreso del Torneo</span>
+                            <span>${finishedMatches}/${totalMatches} partidos (${progressPercent}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${progressPercent}%;"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="saved-card-actions">
@@ -1710,6 +1920,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Set up search and filter events once
+    if (savedSearchInput) {
+        savedSearchInput.addEventListener('input', () => {
+            window.renderSavedTournaments();
+        });
+    }
+
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            activeFilter = e.currentTarget.getAttribute('data-filter');
+            window.renderSavedTournaments();
+        });
+    });
+
 
     function calculateAndDrawStats() {
         const teamStats = {};
@@ -2287,5 +2514,263 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ejecutar comprobación en segundo plano tras inicializar la app
     setTimeout(checkAutoJoinUrl, 200);
 
+    // === LÓGICA DE USUARIOS Y AUTENTICACIÓN ===
+
+    // Comprobar si hay un usuario activo guardado
+    function checkActiveUser() {
+        const activeUser = localStorage.getItem('torneos-fc-user');
+        if (activeUser) {
+            profileInfoBlock.innerHTML = `Sesión activa:<br><strong>${activeUser}</strong>`;
+            btnProfileLogin.classList.add('hidden');
+            btnProfileLogout.classList.remove('hidden');
+            if (profileBtnText) {
+                profileBtnText.textContent = activeUser.split('@')[0];
+                profileBtnText.style.display = 'inline';
+            }
+        } else {
+            profileInfoBlock.textContent = 'Invitado';
+            btnProfileLogin.classList.remove('hidden');
+            btnProfileLogout.classList.add('hidden');
+            if (profileBtnText) {
+                profileBtnText.style.display = 'none';
+            }
+        }
+    }
+    checkActiveUser();
+
+    // Toggle dropdown de perfil
+    btnProfileToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdownMenu.classList.toggle('show');
+        if (dropdownMenu) dropdownMenu.classList.remove('show'); // close hamburger menu
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-profile-menu')) {
+            profileDropdownMenu.classList.remove('show');
+        }
+    });
+
+    // Iniciar Sesión / Registro click
+    btnProfileLogin.addEventListener('click', () => {
+        profileDropdownMenu.classList.remove('show');
+        
+        // Mostrar form login, esconder registro y recuperacion
+        formLogin.classList.remove('hidden');
+        formRegister.classList.add('hidden');
+        formForgot.classList.add('hidden');
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        
+        authModal.classList.remove('hidden');
+    });
+
+    // Cerrar sesión
+    btnProfileLogout.addEventListener('click', () => {
+        localStorage.removeItem('torneos-fc-user');
+        profileDropdownMenu.classList.remove('show');
+        showToast('Sesión cerrada correctamente 👋');
+        checkActiveUser();
+        renderSavedTournaments(); // Volver a listar para ocultar badge "Mis Torneos" o actualizar filtros
+    });
+
+    // Switch Tabs en Auth Modal
+    tabLogin.addEventListener('click', () => {
+        formLogin.classList.remove('hidden');
+        formRegister.classList.add('hidden');
+        formForgot.classList.add('hidden');
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+    });
+
+    tabRegister.addEventListener('click', () => {
+        formLogin.classList.add('hidden');
+        formRegister.classList.remove('hidden');
+        formForgot.classList.add('hidden');
+        tabLogin.classList.remove('active');
+        tabRegister.classList.add('active');
+    });
+
+    linkForgotPassword.addEventListener('click', (e) => {
+        e.preventDefault();
+        formLogin.classList.add('hidden');
+        formRegister.classList.add('hidden');
+        formForgot.classList.remove('hidden');
+    });
+
+    btnForgotBack.addEventListener('click', () => {
+        formLogin.classList.remove('hidden');
+        formRegister.classList.add('hidden');
+        formForgot.classList.add('hidden');
+    });
+
+    btnCloseAuth.addEventListener('click', () => {
+        authModal.classList.add('hidden');
+    });
+
+    // Formulario de Registro
+    formRegister.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-password-confirm').value;
+
+        if (password !== confirmPassword) {
+            showToast('Las contraseñas no coinciden ❌');
+            return;
+        }
+
+        try {
+            const baseUrl = getBackendUrl();
+            const response = await fetch(`${baseUrl}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('¡Registro exitoso! Ya puedes iniciar sesión 🎉');
+                formRegister.reset();
+                tabLogin.click();
+            } else {
+                showToast(data.message || 'Error al registrarse ❌');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de conexión con el servidor ❌');
+        }
+    });
+
+    // Formulario de Login
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        try {
+            const baseUrl = getBackendUrl();
+            const response = await fetch(`${baseUrl}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                localStorage.setItem('torneos-fc-user', data.email);
+                authModal.classList.add('hidden');
+                formLogin.reset();
+                showToast('¡Sesión iniciada con éxito! Bienvenido ⚽');
+                checkActiveUser();
+                renderSavedTournaments(); // Recargar lista para actualizar badges
+            } else {
+                showToast(data.message || 'Correo o contraseña incorrectos ❌');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de conexión con el servidor ❌');
+        }
+    });
+
+    // Formulario de Olvidó su Contraseña
+    formForgot.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('forgot-email').value.trim();
+
+        try {
+            const baseUrl = getBackendUrl();
+            const response = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Enlace de recuperación enviado ✉️');
+                authModal.classList.add('hidden');
+                formForgot.reset();
+                
+                // Mostrar bandeja de entrada simulada estéticamente si hay debug link
+                if (data.debug_reset_link) {
+                    mailboxTargetEmail.textContent = email;
+                    mailboxResetLink.href = data.debug_reset_link;
+                    simulatedMailbox.classList.remove('hidden');
+                }
+            } else {
+                showToast(data.message || 'Error al enviar recuperación ❌');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de conexión con el servidor ❌');
+        }
+    });
+
+    btnCloseMailbox.addEventListener('click', () => {
+        simulatedMailbox.classList.add('hidden');
+    });
+
+    // Formulario de Nueva Contraseña
+    formResetPassword.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = resetEmailHidden.value;
+        const token = resetTokenHidden.value;
+        const newPassword = document.getElementById('reset-new-password').value;
+        const confirmPassword = document.getElementById('reset-new-password-confirm').value;
+
+        if (newPassword !== confirmPassword) {
+            showToast('Las contraseñas no coinciden ❌');
+            return;
+        }
+
+        try {
+            const baseUrl = getBackendUrl();
+            const response = await fetch(`${baseUrl}/api/auth/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, token, new_password: newPassword })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('¡Contraseña restablecida con éxito! Ya puedes iniciar sesión 🔐');
+                resetPasswordModal.classList.add('hidden');
+                formResetPassword.reset();
+                
+                // Limpiar la URL para evitar re-aperturas
+                const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+                window.history.replaceState({}, document.title, cleanUrl);
+                
+                // Abrir login automáticamente
+                btnProfileLogin.click();
+            } else {
+                showToast(data.message || 'Error al restablecer contraseña ❌');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de conexión ❌');
+        }
+    });
+
+    // Verificar si hay parámetros de recuperación en la URL al cargar
+    function checkResetPasswordUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get('reset_email');
+        const token = params.get('reset_token');
+        
+        if (email && token) {
+            simulatedMailbox.classList.add('hidden'); // cerrar mailbox si estuviera abierto
+            resetEmailHidden.value = email;
+            resetTokenHidden.value = token;
+            resetPasswordModal.classList.remove('hidden');
+            showToast('Ingresa tu nueva contraseña 🔐');
+        }
+    }
+    
+    // Ejecutar tras un pequeño retraso
+    setTimeout(checkResetPasswordUrl, 300);
+
 });
+
 
