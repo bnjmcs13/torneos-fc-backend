@@ -23,22 +23,6 @@
         </svg>
     </button>
 
-    <!-- Botón Perfil de Usuario (Top-Right) -->
-    <div class="user-profile-menu">
-        <button id="btn-profile-toggle" class="profile-toggle-btn" title="Perfil de Usuario">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span id="profile-btn-text" style="font-size: 0.8rem; font-weight: bold; margin-left: 0.4rem; display: none;">Login</span>
-        </button>
-        <div id="profile-dropdown-menu" class="dropdown-content profile-dropdown">
-            <div id="profile-info-block" style="padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: #aaa; text-align: center; word-break: break-all;">Invitado</div>
-            <button id="btn-profile-login">Iniciar Sesión / Registro</button>
-            <button id="btn-profile-logout" class="hidden" style="color: #ff4d4d;">Cerrar Sesión</button>
-        </div>
-    </div>
-
     <!-- Menú Hamburguesa -->
     <div class="hamburger-menu">
         <button id="btn-menu-toggle" class="menu-toggle-btn" title="Menú">
@@ -49,6 +33,12 @@
             </svg>
         </button>
         <div id="dropdown-menu" class="dropdown-content">
+            <!-- Bloque de Perfil Integrado -->
+            <div id="profile-info-block" style="padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: #FFD700; text-align: center; word-break: break-all; font-weight: bold;">Invitado</div>
+            <button id="btn-profile-login" style="color: #00F0FF;">👤 Iniciar Sesión / Registro</button>
+            <button id="btn-profile-logout" class="hidden" style="color: #ff4d4d;">👤 Cerrar Sesión</button>
+            <hr class="menu-divider" style="border-color: rgba(255,255,255,0.05); margin: 0;">
+
             <button id="btn-menu-home">Ir al Inicio</button>
             <button id="btn-menu-new">Crear Torneo Nuevo</button>
             <button id="btn-menu-saved">Torneos Guardados</button>
@@ -62,6 +52,7 @@
             <button id="btn-menu-reset" style="color: #ff4d4d;">Limpiar Datos</button>
         </div>
     </div>
+
 
     <div class="container">
         
@@ -380,6 +371,9 @@
                 <button type="button" id="tab-register" class="auth-tab" style="background:none; border:none; color:#ccc; font-weight:bold; font-size:1.1rem; cursor:pointer;">CREAR CUENTA</button>
             </div>
 
+            <!-- Alerta de Error en Auth -->
+            <div id="auth-error-alert" style="background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 0.8rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.2rem; text-align: center; font-weight: bold; display: none;"></div>
+
             <!-- Formulario de Iniciar Sesión -->
             <form id="form-login" class="auth-form">
                 <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
@@ -399,9 +393,14 @@
             <!-- Formulario de Crear Cuenta -->
             <form id="form-register" class="auth-form hidden">
                 <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
+                    <label for="register-username">Nombre de Usuario (Apodo):</label>
+                    <input type="text" id="register-username" required placeholder="Ej: Benjamin123" minlength="3" maxlength="20" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                </div>
+                <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
                     <label for="register-email">Correo Electrónico:</label>
                     <input type="email" id="register-email" required placeholder="ejemplo@correo.com" style="width:100%; border-color: rgba(255,255,255,0.2);">
                 </div>
+
                 <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
                     <label for="register-password">Contraseña:</label>
                     <input type="password" id="register-password" minlength="6" required placeholder="Mínimo 6 caracteres" style="width:100%; border-color: rgba(255,255,255,0.2);">
@@ -437,6 +436,9 @@
             <h2 style="font-size:2rem; margin-bottom:0.5rem; color:#fff;">Nueva Contraseña</h2>
             <p style="color:#ccc; font-size:0.85rem; margin-bottom:1.5rem;">Ingresa tu nueva contraseña para completar la restauración.</p>
             
+            <!-- Alerta de Error en Reset Password -->
+            <div id="reset-error-alert" style="background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 0.8rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.2rem; text-align: center; font-weight: bold; display: none;"></div>
+
             <form id="form-reset-password">
                 <input type="hidden" id="reset-email-hidden">
                 <input type="hidden" id="reset-token-hidden">

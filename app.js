@@ -49,6 +49,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const formResetPassword = document.getElementById('form-reset-password');
     const resetEmailHidden = document.getElementById('reset-email-hidden');
     const resetTokenHidden = document.getElementById('reset-token-hidden');
+
+    const authErrorAlert = document.getElementById('auth-error-alert');
+    const resetErrorAlert = document.getElementById('reset-error-alert');
+
+    function showAuthError(msg) {
+        if (authErrorAlert) {
+            authErrorAlert.textContent = msg;
+            authErrorAlert.style.display = 'block';
+        }
+    }
+
+    function clearAuthError() {
+        if (authErrorAlert) {
+            authErrorAlert.textContent = '';
+            authErrorAlert.style.display = 'none';
+        }
+    }
+
+    function showResetError(msg) {
+        if (resetErrorAlert) {
+            resetErrorAlert.textContent = msg;
+            resetErrorAlert.style.display = 'block';
+        }
+    }
+
+    function clearResetError() {
+        if (resetErrorAlert) {
+            resetErrorAlert.textContent = '';
+            resetErrorAlert.style.display = 'none';
+        }
+    }
     
     const simulatedMailbox = document.getElementById('simulated-mailbox');
     const mailboxTargetEmail = document.getElementById('mailbox-target-email');
@@ -2519,12 +2550,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Comprobar si hay un usuario activo guardado
     function checkActiveUser() {
         const activeUser = localStorage.getItem('torneos-fc-user');
+        const activeUsername = localStorage.getItem('torneos-fc-username') || (activeUser ? activeUser.split('@')[0] : '');
         if (activeUser) {
-            profileInfoBlock.innerHTML = `Sesión activa:<br><strong>${activeUser}</strong>`;
+            profileInfoBlock.innerHTML = `Sesión activa:<br><strong>${activeUsername}</strong><br><small style="color:#888;">${activeUser}</small>`;
             btnProfileLogin.classList.add('hidden');
             btnProfileLogout.classList.remove('hidden');
             if (profileBtnText) {
-                profileBtnText.textContent = activeUser.split('@')[0];
+                profileBtnText.textContent = activeUsername;
                 profileBtnText.style.display = 'inline';
             }
         } else {
@@ -2536,25 +2568,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
     checkActiveUser();
-
-    // Toggle dropdown de perfil
-    btnProfileToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        profileDropdownMenu.classList.toggle('show');
-        if (dropdownMenu) dropdownMenu.classList.remove('show'); // close hamburger menu
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.user-profile-menu')) {
-            profileDropdownMenu.classList.remove('show');
-        }
-    });
 
     // Iniciar Sesión / Registro click
     btnProfileLogin.addEventListener('click', () => {
-        profileDropdownMenu.classList.remove('show');
+        if (dropdownMenu) dropdownMenu.classList.remove('show'); // close hamburger menu
         
+        clearAuthError();
         // Mostrar form login, esconder registro y recuperacion
         formLogin.classList.remove('hidden');
         formRegister.classList.add('hidden');
@@ -2568,14 +2589,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cerrar sesión
     btnProfileLogout.addEventListener('click', () => {
         localStorage.removeItem('torneos-fc-user');
-        profileDropdownMenu.classList.remove('show');
+        localStorage.removeItem('torneos-fc-username');
+        if (dropdownMenu) dropdownMenu.classList.remove('show'); // close hamburger menu
         showToast('Sesión cerrada correctamente 👋');
         checkActiveUser();
         renderSavedTournaments(); // Volver a listar para ocultar badge "Mis Torneos" o actualizar filtros
+
     });
 
     // Switch Tabs en Auth Modal
     tabLogin.addEventListener('click', () => {
+        clearAuthError();
         formLogin.classList.remove('hidden');
         formRegister.classList.add('hidden');
         formForgot.classList.add('hidden');
@@ -2584,6 +2608,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     tabRegister.addEventListener('click', () => {
+        clearAuthError();
         formLogin.classList.add('hidden');
         formRegister.classList.remove('hidden');
         formForgot.classList.add('hidden');
@@ -2593,30 +2618,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkForgotPassword.addEventListener('click', (e) => {
         e.preventDefault();
+        clearAuthError();
         formLogin.classList.add('hidden');
         formRegister.classList.add('hidden');
         formForgot.classList.remove('hidden');
     });
 
     btnForgotBack.addEventListener('click', () => {
+        clearAuthError();
         formLogin.classList.remove('hidden');
         formRegister.classList.add('hidden');
         formForgot.classList.add('hidden');
     });
 
     btnCloseAuth.addEventListener('click', () => {
+        clearAuthError();
         authModal.classList.add('hidden');
     });
 
     // Formulario de Registro
     formRegister.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearAuthError();
+        const username = document.getElementById('register-username').value.trim();
         const email = document.getElementById('register-email').value.trim();
         const password = document.getElementById('register-password').value;
         const confirmPassword = document.getElementById('register-password-confirm').value;
 
         if (password !== confirmPassword) {
-            showToast('Las contraseñas no coinciden ❌');
+            showAuthError('Las contraseñas no coinciden ❌');
+            return;
+        }
+
+        const PROFANITIES = [
+            'puto', 'puta', 'mierda', 'pene', 'vagina', 'culiao', 'concha', 'weon', 'culon', 'culona', 
+            'marica', 'maricon', 'hijodeputa', 'bastardo', 'zorra', 'chupala', 'pingo', 'verga', 
+            'orto', 'caca', 'mamon', 'pajero', 'cabron', 'boludo', 'pelotudo', 'wea', 'qlo', 'qlio',
+            'conchadesumadre', 'putito', 'putita', 'sapo', 'chupalo'
+        ];
+
+        function isProfane(name) {
+            if (!name) return false;
+            const clean = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            return PROFANITIES.some(word => clean.includes(word) || name.toLowerCase().includes(word));
+        }
+
+        if (isProfane(username)) {
+            showAuthError('El nombre contiene palabras obscenas prohibidas ❌');
             return;
         }
 
@@ -2625,7 +2673,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${baseUrl}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, username, password })
             });
             const data = await response.json();
 
@@ -2634,17 +2682,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 formRegister.reset();
                 tabLogin.click();
             } else {
-                showToast(data.message || 'Error al registrarse ❌');
+                showAuthError(data.message || 'Error al registrarse ❌');
             }
         } catch (err) {
             console.error(err);
-            showToast('Error de conexión con el servidor ❌');
+            showAuthError('Error de conexión con el servidor ❌');
         }
     });
+
 
     // Formulario de Login
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearAuthError();
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
 
@@ -2659,23 +2709,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.success) {
                 localStorage.setItem('torneos-fc-user', data.email);
+                localStorage.setItem('torneos-fc-username', data.username || data.email.split('@')[0]);
                 authModal.classList.add('hidden');
                 formLogin.reset();
+
                 showToast('¡Sesión iniciada con éxito! Bienvenido ⚽');
                 checkActiveUser();
                 renderSavedTournaments(); // Recargar lista para actualizar badges
             } else {
-                showToast(data.message || 'Correo o contraseña incorrectos ❌');
+                showAuthError(data.message || 'Correo o contraseña incorrectos ❌');
             }
         } catch (err) {
             console.error(err);
-            showToast('Error de conexión con el servidor ❌');
+            showAuthError('Error de conexión con el servidor ❌');
         }
     });
 
     // Formulario de Olvidó su Contraseña
     formForgot.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearAuthError();
         const email = document.getElementById('forgot-email').value.trim();
 
         try {
@@ -2699,11 +2752,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     simulatedMailbox.classList.remove('hidden');
                 }
             } else {
-                showToast(data.message || 'Error al enviar recuperación ❌');
+                showAuthError(data.message || 'Error al enviar recuperación ❌');
             }
         } catch (err) {
             console.error(err);
-            showToast('Error de conexión con el servidor ❌');
+            showAuthError('Error de conexión con el servidor ❌');
         }
     });
 
@@ -2714,13 +2767,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Formulario de Nueva Contraseña
     formResetPassword.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearResetError();
         const email = resetEmailHidden.value;
         const token = resetTokenHidden.value;
         const newPassword = document.getElementById('reset-new-password').value;
         const confirmPassword = document.getElementById('reset-new-password-confirm').value;
 
         if (newPassword !== confirmPassword) {
-            showToast('Las contraseñas no coinciden ❌');
+            showResetError('Las contraseñas no coinciden ❌');
             return;
         }
 
@@ -2735,6 +2789,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.success) {
                 showToast('¡Contraseña restablecida con éxito! Ya puedes iniciar sesión 🔐');
+                clearResetError();
                 resetPasswordModal.classList.add('hidden');
                 formResetPassword.reset();
                 
@@ -2745,11 +2800,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Abrir login automáticamente
                 btnProfileLogin.click();
             } else {
-                showToast(data.message || 'Error al restablecer contraseña ❌');
+                showResetError(data.message || 'Error al restablecer contraseña ❌');
             }
         } catch (err) {
             console.error(err);
-            showToast('Error de conexión ❌');
+            showResetError('Error de conexión ❌');
         }
     });
 

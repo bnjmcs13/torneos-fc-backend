@@ -164,16 +164,39 @@ def get_tournament(code):
         return jsonify({"success": True, "tournament": tournaments_db[code]})
     return jsonify({"success": False, "message": "Torneo no encontrado"}), 404
 
+PROFANITIES = {
+    'puto', 'puta', 'mierda', 'pene', 'vagina', 'culiao', 'concha', 'weon', 'culon', 'culona', 
+    'marica', 'maricon', 'hijodeputa', 'bastardo', 'zorra', 'chupala', 'pingo', 'verga', 
+    'orto', 'caca', 'mamon', 'pajero', 'cabron', 'boludo', 'pelotudo', 'wea', 'qlo', 'qlio',
+    'conchadesumadre', 'putito', 'putita', 'sapo', 'chupalo'
+}
+
+def is_profane(name):
+    if not name:
+        return False
+    clean_name = ''.join(e for e in name if e.isalnum()).lower()
+    for word in PROFANITIES:
+        if word in clean_name or word in name.lower():
+            return True
+    return False
+
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     try:
         data = request.json
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
+        username = data.get('username', '').strip()
         
-        if not email or not password:
-            return jsonify({"success": False, "message": "Email y contraseña requeridos"}), 400
+        if not email or not password or not username:
+            return jsonify({"success": False, "message": "Email, nombre de usuario y contraseña requeridos"}), 400
         
+        if len(username) < 3 or len(username) > 20:
+            return jsonify({"success": False, "message": "El nombre de usuario debe tener entre 3 y 20 caracteres"}), 400
+
+        if is_profane(username):
+            return jsonify({"success": False, "message": "El nombre de usuario contiene palabras obscenas prohibidas ❌"}), 400
+
         db = load_tournaments()
         if '_USERS_' not in db:
             db['_USERS_'] = {}
@@ -181,7 +204,13 @@ def register():
         if email in db['_USERS_']:
             return jsonify({"success": False, "message": "El correo electrónico ya está registrado"}), 400
             
+        # Check if username is already taken
+        for u_email, u_data in db['_USERS_'].items():
+            if u_data.get('username', '').lower() == username.lower():
+                return jsonify({"success": False, "message": "El nombre de usuario ya está en uso"}), 400
+
         db['_USERS_'][email] = {
+            "username": username,
             "password": generate_password_hash(password),
             "reset_token": None
         }
@@ -209,10 +238,12 @@ def login():
         return jsonify({
             "success": True, 
             "email": email, 
+            "username": users[email].get('username', email.split('@')[0]),
             "message": "Sesión iniciada correctamente"
         })
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
 
 @app.route('/api/auth/forgot-password', methods=['POST'])
 def forgot_password():
