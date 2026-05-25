@@ -184,14 +184,25 @@ def is_profane(name):
 
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
+DISPOSABLE_DOMAINS = {
+    'yopmail.com', 'mailinator.com', 'tempmail.com', 'dispostable.com', 
+    '10minutemail.com', 'guerrillamail.com', 'trashmail.com', 'getairmail.com',
+    'sharklasers.com', 'guerrillamailblock.com', 'guerrillamail.net'
+}
+
 def validate_email_existence(email):
     # 1. Format validation
     if not EMAIL_REGEX.match(email):
         return False, "El formato del correo electrónico es inválido ❌"
         
-    # 2. Domain existence validation (checking DNS records)
+    domain = email.split('@')[-1]
+    
+    # 2. Disposable domain check
+    if domain in DISPOSABLE_DOMAINS:
+        return False, "No se permiten correos electrónicos temporales o desechables ❌"
+        
+    # 3. Domain existence validation (checking DNS records)
     try:
-        domain = email.split('@')[-1]
         socket.getaddrinfo(domain, None)
         return True, None
     except Exception:
