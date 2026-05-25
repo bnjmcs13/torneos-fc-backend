@@ -33,12 +33,6 @@
             </svg>
         </button>
         <div id="dropdown-menu" class="dropdown-content">
-            <!-- Bloque de Perfil Integrado -->
-            <div id="profile-info-block" style="padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: #FFD700; text-align: center; word-break: break-all; font-weight: bold;">Invitado</div>
-            <button id="btn-profile-login" style="color: #00F0FF;">👤 Iniciar Sesión / Registro</button>
-            <button id="btn-profile-logout" class="hidden" style="color: #ff4d4d;">👤 Cerrar Sesión</button>
-            <hr class="menu-divider" style="border-color: rgba(255,255,255,0.05); margin: 0;">
-
             <button id="btn-menu-home">Ir al Inicio</button>
             <button id="btn-menu-new">Crear Torneo Nuevo</button>
             <button id="btn-menu-saved">Torneos Guardados</button>
@@ -358,119 +352,6 @@
                 <button id="btn-cancel-join" class="btn-secondary" style="margin-top:0;">Cancelar</button>
                 <button id="btn-confirm-join" class="btn-primary" style="margin-top:0; background: linear-gradient(135deg, #00F0FF, #0080FF);">Ver Torneo</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal de Autenticación (Login / Registro / Recuperación) -->
-    <div id="auth-modal" class="champion-modal hidden">
-        <div class="champion-content auth-card" style="background: rgba(10, 25, 47, 0.95); border: 2px solid var(--primary-color, #FFD700); padding: 2rem; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-            
-            <!-- Tabs para Iniciar Sesión / Crear Cuenta -->
-            <div class="auth-tabs" style="display:flex; justify-content:space-around; margin-bottom:2rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.8rem;">
-                <button type="button" id="tab-login" class="auth-tab active" style="background:none; border:none; color:var(--primary-color, #FFD700); font-weight:bold; font-size:1.1rem; cursor:pointer;">INICIAR SESIÓN</button>
-                <button type="button" id="tab-register" class="auth-tab" style="background:none; border:none; color:#ccc; font-weight:bold; font-size:1.1rem; cursor:pointer;">CREAR CUENTA</button>
-            </div>
-
-            <!-- Alerta de Error en Auth -->
-            <div id="auth-error-alert" style="background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 0.8rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.2rem; text-align: center; font-weight: bold; display: none;"></div>
-
-            <!-- Formulario de Iniciar Sesión -->
-            <form id="form-login" class="auth-form">
-                <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
-                    <label for="login-email">Correo o Usuario:</label>
-                    <input type="text" id="login-email" required placeholder="ejemplo@correo.com o Apodo" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <div class="input-group" style="text-align:left; margin-bottom:1rem;">
-                    <label for="login-password">Contraseña:</label>
-                    <input type="password" id="login-password" required placeholder="******" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <div style="text-align:right; margin-bottom:1.5rem;">
-                    <a href="#" id="link-forgot-password" style="color:var(--primary-color, #FFD700); font-size:0.85rem; text-decoration:none;">¿Olvidó su contraseña?</a>
-                </div>
-                <button type="submit" class="btn-primary" style="width:100%; margin-top:0;">ENTRAR</button>
-            </form>
-
-            <!-- Formulario de Crear Cuenta -->
-            <form id="form-register" class="auth-form hidden">
-                <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
-                    <label for="register-username">Nombre de Usuario (Apodo):</label>
-                    <input type="text" id="register-username" required placeholder="" minlength="3" maxlength="20" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
-                    <label for="register-email">Correo Electrónico:</label>
-                    <input type="email" id="register-email" required placeholder="ejemplo@correo.com" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-
-                <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
-                    <label for="register-password">Contraseña:</label>
-                    <input type="password" id="register-password" minlength="6" required placeholder="Mínimo 6 caracteres" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <div class="input-group" style="text-align:left; margin-bottom:1.5rem;">
-                    <label for="register-password-confirm">Confirmar Contraseña:</label>
-                    <input type="password" id="register-password-confirm" minlength="6" required placeholder="Repite tu contraseña" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <button type="submit" class="btn-primary" style="width:100%; margin-top:0;">CREAR CUENTA</button>
-            </form>
-
-            <!-- Formulario de Recuperar Contraseña -->
-            <form id="form-forgot" class="auth-form hidden">
-                <h3 style="color:#fff; margin-bottom:0.5rem;">Recuperar Contraseña</h3>
-                <p style="color:#ccc; font-size:0.85rem; margin-bottom:1.5rem; line-height:1.4;">Ingresa tu correo electrónico y te enviaremos un enlace para restaurar tu contraseña.</p>
-                <div class="input-group" style="text-align:left; margin-bottom:1.5rem;">
-                    <label for="forgot-email">Correo Electrónico:</label>
-                    <input type="email" id="forgot-email" required placeholder="ejemplo@correo.com" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <div style="display:flex; gap:1rem;">
-                    <button type="button" id="btn-forgot-back" class="btn-secondary" style="flex:1; margin-top:0;">Atrás</button>
-                    <button type="submit" class="btn-primary" style="flex:1; margin-top:0;">ENVIAR ENLACE</button>
-                </div>
-            </form>
-
-            <button type="button" id="btn-close-auth" class="btn-secondary" style="width:100%; margin-top:1.5rem; border-color:rgba(255,255,255,0.2); color:#ccc;">Cerrar</button>
-        </div>
-    </div>
-
-    <!-- Modal de Restauración de Contraseña (Nueva Contraseña) -->
-    <div id="reset-password-modal" class="champion-modal hidden">
-        <div class="champion-content auth-card" style="background: rgba(10, 25, 47, 0.95); border: 2px solid var(--primary-color, #FFD700); padding: 2rem; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-            <h2 style="font-size:2rem; margin-bottom:0.5rem; color:#fff;">Nueva Contraseña</h2>
-            <p style="color:#ccc; font-size:0.85rem; margin-bottom:1.5rem;">Ingresa tu nueva contraseña para completar la restauración.</p>
-            
-            <!-- Alerta de Error en Reset Password -->
-            <div id="reset-error-alert" style="background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 0.8rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.2rem; text-align: center; font-weight: bold; display: none;"></div>
-
-            <form id="form-reset-password">
-                <input type="hidden" id="reset-email-hidden">
-                <input type="hidden" id="reset-token-hidden">
-                
-                <div class="input-group" style="text-align:left; margin-bottom:1.2rem;">
-                    <label for="reset-new-password">Nueva Contraseña:</label>
-                    <input type="password" id="reset-new-password" minlength="6" required placeholder="Mínimo 6 caracteres" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <div class="input-group" style="text-align:left; margin-bottom:1.5rem;">
-                    <label for="reset-new-password-confirm">Confirmar Contraseña:</label>
-                    <input type="password" id="reset-new-password-confirm" minlength="6" required placeholder="Confirma tu contraseña" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                </div>
-                <button type="submit" class="btn-primary" style="width:100%; margin-top:0;">RESTABLECER CONTRASEÑA</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Bandeja de Correo Simulada (Para pruebas y debug estático) -->
-    <div id="simulated-mailbox" class="simulated-mailbox hidden" style="position:fixed; bottom:1.5rem; left:1.5rem; width:340px; background:#1e293b; border:2px solid #00F0FF; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:10000; padding:1rem; font-family:'Inter', sans-serif;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; margin-bottom:0.8rem;">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-                <span style="font-size:1.2rem;">✉️</span>
-                <strong style="color:#00F0FF; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Bandeja Entrada (Test)</strong>
-            </div>
-            <button type="button" id="btn-close-mailbox" style="background:none; border:none; color:#ccc; font-size:1.3rem; cursor:pointer; font-weight:bold; margin-left:auto; line-height:1;">&times;</button>
-        </div>
-        <div style="background:#0f172a; padding:0.8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-            <div style="font-size:0.75rem; color:#aaa; margin-bottom:0.3rem;">De: <strong>noreply@torneosfc.com</strong></div>
-            <div style="font-size:0.75rem; color:#aaa; margin-bottom:0.5rem;">Para: <strong id="mailbox-target-email">...</strong></div>
-            <h4 style="color:#fff; margin:0 0 0.5rem 0; font-size:0.85rem;">Restauración de Contraseña - Torneos FC</h4>
-            <p style="color:#ccc; font-size:0.8rem; margin:0 0 1rem 0; line-height:1.4;">Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
-            <a href="#" id="mailbox-reset-link" style="display:inline-block; background:linear-gradient(135deg, #00F0FF, #0080FF); color:#fff; font-size:0.8rem; font-weight:bold; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; text-align:center; width:100%; box-shadow:0 4px 10px rgba(0, 240, 255, 0.3); box-sizing:border-box;">RESTABLECER CONTRASEÑA</a>
         </div>
     </div>
 
