@@ -4,6 +4,8 @@ import os
 import string
 import random
 import secrets
+import re
+import socket
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -180,6 +182,21 @@ def is_profane(name):
             return True
     return False
 
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+
+def validate_email_existence(email):
+    # 1. Format validation
+    if not EMAIL_REGEX.match(email):
+        return False, "El formato del correo electrónico es inválido ❌"
+        
+    # 2. Domain existence validation (checking DNS records)
+    try:
+        domain = email.split('@')[-1]
+        socket.getaddrinfo(domain, None)
+        return True, None
+    except Exception:
+        return False, "El correo electrónico no existe (dominio no existente o no resoluble) ❌"
+
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     try:
@@ -190,6 +207,11 @@ def register():
         
         if not email or not password or not username:
             return jsonify({"success": False, "message": "Email, nombre de usuario y contraseña requeridos"}), 400
+            
+        # Validate email existence
+        is_valid_email, email_error = validate_email_existence(email)
+        if not is_valid_email:
+            return jsonify({"success": False, "message": email_error}), 400
         
         if len(username) < 3 or len(username) > 20:
             return jsonify({"success": False, "message": "El nombre de usuario debe tener entre 3 y 20 caracteres"}), 400
