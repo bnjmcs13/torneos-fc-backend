@@ -369,8 +369,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.updateAppTheme();
     }
 
-    // Call it immediately on startup to ensure a clean slate
-    resetTournamentSetup();
+
+
 
     // Home & Format Navigation
     btnCreateTournament.addEventListener('click', () => {
@@ -2768,9 +2768,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Ejecutar la limpieza inicial tras completar la carga completa de elementos
+    resetTournamentSetup();
+
     // Ejecutar tras un pequeño retraso
     setTimeout(checkResetPasswordUrl, 300);
 
 });
+
 
 
