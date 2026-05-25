@@ -355,6 +355,39 @@
         </div>
     </div>
 
+    <!-- Modal Configuración de Playoffs -->
+    <div id="playoffs-setup-modal" class="champion-modal hidden">
+        <div class="champion-content" style="background: rgba(10, 25, 47, 0.95); border: 2px solid #FFD700; padding: 2rem; max-width: 450px; width: 90%;">
+            <div class="trophy-icon" style="font-size: 3rem; text-shadow: 0 0 10px gold; margin-bottom: 0.5rem;">🏆</div>
+            <h3 class="champion-sub" style="color: #FFD700;">CONFIGURACIÓN DE PLAYOFFS</h3>
+            <p class="champion-desc" style="font-size: 0.9rem; color: var(--accent-silver); margin-bottom: 1.5rem;">Elige la cantidad de clasificados y el formato de las llaves finales.</p>
+            
+            <div class="input-group" style="margin-top: 1rem; text-align: left;">
+                <label for="playoffs-type-select" style="color: #fff; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Formato de Playoffs:</label>
+                <select id="playoffs-type-select" class="form-select" style="width: 100%; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: #fff; padding: 0.6rem; border-radius: 6px;">
+                    <option value="direct" selected>Eliminación Directa Estándar</option>
+                    <option value="advantage">Winner + Loser Bracket (Ventaja al 1°)</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="margin-top: 1rem; text-align: left;">
+                <label for="playoffs-qty-select" style="color: #fff; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Clasificados de la Liga:</label>
+                <select id="playoffs-qty-select" class="form-select" style="width: 100%; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: #fff; padding: 0.6rem; border-radius: 6px;">
+                    <!-- Se poblará dinámicamente -->
+                </select>
+            </div>
+
+            <div id="playoffs-info-banner" style="margin-top: 1.2rem; padding: 0.75rem; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;">
+                Formato estándar de eliminación directa basado en llaves tradicionales.
+            </div>
+
+            <div style="display:flex; justify-content:center; gap: 1rem; margin-top:2rem;">
+                <button id="btn-cancel-playoffs" class="btn-secondary" style="margin-top:0;">Cancelar</button>
+                <button id="btn-start-playoffs" class="btn-primary" style="margin-top:0; background: linear-gradient(135deg, #FFD700, #F57F17); color: #000; font-weight: bold; border: none;">Iniciar Fase Final</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 

@@ -1489,7 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 phaseLabel.style.textTransform = 'uppercase';
                 phaseLabel.style.letterSpacing = '1px';
                 phaseLabel.style.fontWeight = 'bold';
-                phaseLabel.textContent = title;
+                phaseLabel.textContent = m.phase || title;
                 matchDiv.appendChild(phaseLabel);
                 
                 const winnerObj = checkMatchWinner(m);
@@ -1589,7 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     match.p1 = null; match.p2 = null;
                 }
                 
-                pushWinnerToNextRound(rIdx, mIdx, null);
+                pushWinnerToNextRound(rIdx, mIdx, null, null);
 
                 // Show save button correctly
                 const currentFocus = {r: rIdx, m: mIdx, t: type};
@@ -1619,9 +1619,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const winner = checkMatchWinner(match);
                     if (winner === 'tie' || winner === null) {
-                        pushWinnerToNextRound(rIdx, mIdx, null);
+                        pushWinnerToNextRound(rIdx, mIdx, null, null);
                     } else {
-                        pushWinnerToNextRound(rIdx, mIdx, winner);
+                        const loser = (winner.id === (match.t1 && match.t1.id)) ? match.t2 : match.t1;
+                        pushWinnerToNextRound(rIdx, mIdx, winner, loser);
                     }
 
                     const currentFocus = document.activeElement;
@@ -1682,22 +1683,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function pushWinnerToNextRound(rIdx, mIdx, winnerTeam) {
+    function pushWinnerToNextRound(rIdx, mIdx, winnerTeam, loserTeam = null) {
         const match = state.bracketRounds[rIdx][mIdx];
-        if (!match.nextMatchId) return;
-
-        const nextParts = match.nextMatchId.split('-');
-        const nextR = parseInt(nextParts[0].substring(1));
-        const nextM = parseInt(nextParts[1].substring(1));
-
-        const nextMatch = state.bracketRounds[nextR][nextM];
-        nextMatch[match.nextMatchPos] = winnerTeam;
+        if (!match) return;
         
-        // Reset sub-path
-        nextMatch.s1 = null; nextMatch.s2 = null;
-        nextMatch.s1_v = null; nextMatch.s2_v = null;
-        nextMatch.p1 = null; nextMatch.p2 = null;
-        pushWinnerToNextRound(nextR, nextM, null);
+        // Propagate Winner
+        if (match.nextMatchId) {
+            const nextParts = match.nextMatchId.split('-');
+            const nextR = parseInt(nextParts[0].substring(1));
+            const nextM = parseInt(nextParts[1].substring(1));
+            const nextMatch = state.bracketRounds[nextR] ? state.bracketRounds[nextR][nextM] : null;
+            if (nextMatch) {
+                const prevTeam = nextMatch[match.nextMatchPos];
+                if (prevTeam !== winnerTeam) {
+                    nextMatch[match.nextMatchPos] = winnerTeam;
+                    nextMatch.s1 = null; nextMatch.s2 = null;
+                    nextMatch.s1_v = null; nextMatch.s2_v = null;
+                    nextMatch.p1 = null; nextMatch.p2 = null;
+                    nextMatch.isFinished = false;
+                    pushWinnerToNextRound(nextR, nextM, null, null);
+                }
+            }
+        }
+        
+        // Propagate Loser
+        if (match.nextLoserMatchId) {
+            const nextParts = match.nextLoserMatchId.split('-');
+            const nextR = parseInt(nextParts[0].substring(1));
+            const nextM = parseInt(nextParts[1].substring(1));
+            const nextMatch = state.bracketRounds[nextR] ? state.bracketRounds[nextR][nextM] : null;
+            if (nextMatch) {
+                const prevTeam = nextMatch[match.nextLoserMatchPos];
+                if (prevTeam !== loserTeam) {
+                    nextMatch[match.nextLoserMatchPos] = loserTeam;
+                    nextMatch.s1 = null; nextMatch.s2 = null;
+                    nextMatch.s1_v = null; nextMatch.s2_v = null;
+                    nextMatch.p1 = null; nextMatch.p2 = null;
+                    nextMatch.isFinished = false;
+                    pushWinnerToNextRound(nextR, nextM, null, null);
+                }
+            }
+        }
     }
 
     // SAVE LOGIC
@@ -2267,65 +2293,477 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnMenuInstall) btnMenuInstall.classList.add('hidden');
     }
 
-    // --- TRANSICIÓN DE LIGA A COPA ---
-    function transitionLigaToCopa() {
+    // --- ADVANTAGE BRACKET GENERATOR (Winner + Loser Bracket con ventaja al 1°) ---
+    function generateAdvantageBracket(topTeams, targetSize) {
+        state.bracketRounds = [];
+        state.bracketFormatType = 'advantage';
+        
+        let rounds = [];
+        
+        if (targetSize === 4) {
+            // Round 0
+            rounds.push([
+                { id: 'R0-M0', phase: 'Winner Play-In (B vs C)', t1: topTeams[1] || null, t2: topTeams[2] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M1', nextLoserMatchPos: 't2' }
+            ]);
+            // Round 1
+            rounds.push([
+                { id: 'R1-M0', phase: 'Winner Semis (A vs Winner B/C)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M0', nextLoserMatchPos: 't2' },
+                { id: 'R1-M1', phase: 'Loser R1 (D vs Loser B/C)', t1: topTeams[3] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1' }
+            ]);
+            // Round 2
+            rounds.push([
+                { id: 'R2-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
+            ]);
+            // Round 3
+            rounds.push([
+                { id: 'R3-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+            ]);
+        } else if (targetSize === 5) {
+            // Round 0
+            rounds.push([
+                { id: 'R0-M0', phase: 'Winner Play-In (B vs C)', t1: topTeams[1] || null, t2: topTeams[2] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M1', nextLoserMatchPos: 't2' },
+                { id: 'R0-M1', phase: 'Loser Play-In (D vs E)', t1: topTeams[3] || null, t2: topTeams[4] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1' }
+            ]);
+            // Round 1
+            rounds.push([
+                { id: 'R1-M0', phase: 'Winner Semis (A vs Winner B/C)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M0', nextLoserMatchPos: 't2' },
+                { id: 'R1-M1', phase: 'Loser R1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1' }
+            ]);
+            // Round 2
+            rounds.push([
+                { id: 'R2-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
+            ]);
+            // Round 3
+            rounds.push([
+                { id: 'R3-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+            ]);
+        } else if (targetSize === 8) {
+            // Round 0
+            rounds.push([
+                { id: 'R0-M0', phase: 'Winner Play-In 1 (B vs H)', t1: topTeams[1] || null, t2: topTeams[7] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M2', nextLoserMatchPos: 't2' },
+                { id: 'R0-M1', phase: 'Winner Play-In 2 (C vs G)', t1: topTeams[2] || null, t2: topTeams[6] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1', nextLoserMatchId: 'R1-M3', nextLoserMatchPos: 't1' },
+                { id: 'R0-M2', phase: 'Winner Play-In 3 (D vs F)', t1: topTeams[3] || null, t2: topTeams[5] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't2', nextLoserMatchId: 'R1-M3', nextLoserMatchPos: 't2' }
+            ]);
+            // Round 1
+            rounds.push([
+                { id: 'R1-M0', phase: 'Winner Semis 1 (A vs Winner B/H)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M1', nextLoserMatchPos: 't1' },
+                { id: 'R1-M1', phase: 'Winner Semis 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't2', nextLoserMatchId: 'R2-M2', nextLoserMatchPos: 't1' },
+                { id: 'R1-M2', phase: 'Loser R1 Match 1 (E vs Loser B/H)', t1: topTeams[4] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M2', nextMatchPos: 't2' },
+                { id: 'R1-M3', phase: 'Loser R1 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't2' }
+            ]);
+            // Round 2
+            rounds.push([
+                { id: 'R2-M0', phase: 'Winner Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't1', nextLoserMatchId: 'R4-M0', nextLoserMatchPos: 't2' },
+                { id: 'R2-M1', phase: 'Loser R2 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1' },
+                { id: 'R2-M2', phase: 'Loser R2 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2' }
+            ]);
+            // Round 3
+            rounds.push([
+                { id: 'R3-M0', phase: 'Loser Semis', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't1' }
+            ]);
+            // Round 4
+            rounds.push([
+                { id: 'R4-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't2' }
+            ]);
+            // Round 5
+            rounds.push([
+                { id: 'R5-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+            ]);
+        } else if (targetSize === 16) {
+            // Round 0
+            rounds.push([
+                { id: 'R0-M0', phase: 'Winner Play-In 1 (B vs P)', t1: topTeams[1] || null, t2: topTeams[15] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M0', nextMatchPos: 't2', nextLoserMatchId: 'R1-M7', nextLoserMatchPos: 't2' },
+                { id: 'R0-M1', phase: 'Winner Play-In 2 (C vs O)', t1: topTeams[2] || null, t2: topTeams[14] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't1', nextLoserMatchId: 'R1-M6', nextLoserMatchPos: 't1' },
+                { id: 'R0-M2', phase: 'Winner Play-In 3 (D vs N)', t1: topTeams[3] || null, t2: topTeams[13] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M1', nextMatchPos: 't2', nextLoserMatchId: 'R1-M6', nextLoserMatchPos: 't2' },
+                { id: 'R0-M3', phase: 'Winner Play-In 4 (E vs M)', t1: topTeams[4] || null, t2: topTeams[12] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M2', nextMatchPos: 't1', nextLoserMatchId: 'R1-M5', nextLoserMatchPos: 't1' },
+                { id: 'R0-M4', phase: 'Winner Play-In 5 (F vs L)', t1: topTeams[5] || null, t2: topTeams[11] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M2', nextMatchPos: 't2', nextLoserMatchId: 'R1-M5', nextLoserMatchPos: 't2' },
+                { id: 'R0-M5', phase: 'Winner Play-In 6 (G vs K)', t1: topTeams[6] || null, t2: topTeams[10] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M3', nextMatchPos: 't1', nextLoserMatchId: 'R1-M4', nextLoserMatchPos: 't1' },
+                { id: 'R0-M6', phase: 'Winner Play-In 7 (H vs J)', t1: topTeams[7] || null, t2: topTeams[9] || null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R1-M3', nextMatchPos: 't2', nextLoserMatchId: 'R1-M4', nextLoserMatchPos: 't2' }
+            ]);
+            // Round 1
+            rounds.push([
+                { id: 'R1-M0', phase: 'Winner Quarters 1 (A vs W1)', t1: topTeams[0] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't1', nextLoserMatchId: 'R2-M2', nextLoserMatchPos: 't1' },
+                { id: 'R1-M1', phase: 'Winner Quarters 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M0', nextMatchPos: 't2', nextLoserMatchId: 'R2-M3', nextLoserMatchPos: 't1' },
+                { id: 'R1-M2', phase: 'Winner Quarters 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't1', nextLoserMatchId: 'R2-M4', nextLoserMatchPos: 't1' },
+                { id: 'R1-M3', phase: 'Winner Quarters 4', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M1', nextMatchPos: 't2', nextLoserMatchId: 'R2-M5', nextLoserMatchPos: 't1' },
+                { id: 'R1-M4', phase: 'Loser R1 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M5', nextMatchPos: 't2' },
+                { id: 'R1-M5', phase: 'Loser R1 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M4', nextMatchPos: 't2' },
+                { id: 'R1-M6', phase: 'Loser R1 Match 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M3', nextMatchPos: 't2' },
+                { id: 'R1-M7', phase: 'Loser R1 Match 4 (I vs L1)', t1: topTeams[8] || null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R2-M2', nextMatchPos: 't2' }
+            ]);
+            // Round 2
+            rounds.push([
+                { id: 'R2-M0', phase: 'Winner Semis 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't1', nextLoserMatchId: 'R3-M1', nextLoserMatchPos: 't1' },
+                { id: 'R2-M1', phase: 'Winner Semis 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M0', nextMatchPos: 't2', nextLoserMatchId: 'R3-M2', nextLoserMatchPos: 't1' },
+                { id: 'R2-M2', phase: 'Loser R2 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M3', nextMatchPos: 't1' },
+                { id: 'R2-M3', phase: 'Loser R2 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M3', nextMatchPos: 't2' },
+                { id: 'R2-M4', phase: 'Loser R2 Match 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M4', nextMatchPos: 't1' },
+                { id: 'R2-M5', phase: 'Loser R2 Match 4', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R3-M4', nextMatchPos: 't2' }
+            ]);
+            // Round 3
+            rounds.push([
+                { id: 'R3-M0', phase: 'Winner Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R7-M0', nextMatchPos: 't1', nextLoserMatchId: 'R6-M0', nextLoserMatchPos: 't2' },
+                { id: 'R3-M1', phase: 'Loser R3 Match 1', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't1' },
+                { id: 'R3-M2', phase: 'Loser R3 Match 2', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R4-M0', nextMatchPos: 't2' },
+                { id: 'R3-M3', phase: 'Loser R3 Match 3', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't2' }
+            ]);
+            // Round 4
+            rounds.push([
+                { id: 'R4-M0', phase: 'Loser R4', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R5-M0', nextMatchPos: 't1' }
+            ]);
+            // Round 5
+            rounds.push([
+                { id: 'R5-M0', phase: 'Loser Semis', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R6-M0', nextMatchPos: 't1' }
+            ]);
+            // Round 6
+            rounds.push([
+                { id: 'R6-M0', phase: 'Loser Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null, nextMatchId: 'R7-M0', nextMatchPos: 't2' }
+            ]);
+            // Round 7
+            rounds.push([
+                { id: 'R7-M0', phase: 'Grand Final', t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null }
+            ]);
+        } else if (targetSize === 32) {
+            // Programmatic schema generator for N = 32
+            // Round 0
+            const r0 = [];
+            for (let m = 0; m < 15; m++) {
+                const t1Seed = m + 2; 
+                const t2Seed = 32 - m; 
+                const targetOctavosM = m === 0 ? 0 : Math.floor((m - 1) / 2) + 1;
+                const nextMatchPos = m === 0 ? 't2' : ((m - 1) % 2 === 0 ? 't1' : 't2');
+                let nextLoserMatch = 8;
+                if (m === 0) nextLoserMatch = 8;
+                else if (m === 1 || m === 2) nextLoserMatch = 9;
+                else if (m === 3 || m === 4) nextLoserMatch = 10;
+                else if (m === 5 || m === 6) nextLoserMatch = 11;
+                else if (m === 7 || m === 8) nextLoserMatch = 12;
+                else if (m === 9 || m === 10) nextLoserMatch = 13;
+                else if (m === 11 || m === 12) nextLoserMatch = 14;
+                else if (m === 13 || m === 14) nextLoserMatch = 15;
+
+                const nextLoserPos = m === 0 ? 't1' : (m % 2 !== 0 ? 't1' : 't2');
+
+                r0.push({
+                    id: `R0-M${m}`,
+                    phase: `Winner Play-In ${m+1}`,
+                    t1: topTeams[t1Seed - 1] || null,
+                    t2: topTeams[t2Seed - 1] || null,
+                    s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R1-M${targetOctavosM}`,
+                    nextMatchPos: nextMatchPos,
+                    nextLoserMatchId: `R1-M${nextLoserMatch}`,
+                    nextLoserMatchPos: nextLoserPos
+                });
+            }
+            rounds.push(r0);
+
+            // Round 1
+            const r1 = [];
+            // Winner Octavos (M0 to M7)
+            for (let m = 0; m < 8; m++) {
+                r1.push({
+                    id: `R1-M${m}`,
+                    phase: m === 0 ? `Winner Octavos 1 (A vs W1)` : `Winner Octavos ${m+1}`,
+                    t1: m === 0 ? topTeams[0] : null,
+                    t2: null,
+                    s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R2-M${Math.floor(m / 2)}`,
+                    nextMatchPos: m % 2 === 0 ? 't1' : 't2',
+                    nextLoserMatchId: `R2-M${m + 4}`,
+                    nextLoserMatchPos: 't1'
+                });
+            }
+            // Loser R1 (M8 to M15)
+            for (let m = 8; m < 16; m++) {
+                r1.push({
+                    id: `R1-M${m}`,
+                    phase: `Loser R1 Match ${m - 7}`,
+                    t1: null,
+                    t2: m === 8 ? topTeams[16] || null : null, 
+                    s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R2-M${m - 4}`, 
+                    nextMatchPos: 't2'
+                });
+            }
+            rounds.push(r1);
+
+            // Round 2
+            const r2 = [];
+            // Winner Quarters (M0 to M3)
+            for (let m = 0; m < 4; m++) {
+                r2.push({
+                    id: `R2-M${m}`,
+                    phase: `Winner Quarters ${m+1}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R3-M${Math.floor(m / 2)}`,
+                    nextMatchPos: m % 2 === 0 ? 't1' : 't2',
+                    nextLoserMatchId: `R4-M${m + 1}`, 
+                    nextLoserMatchPos: 't1'
+                });
+            }
+            // Loser R2 (M4 to M11)
+            for (let m = 4; m < 12; m++) {
+                r2.push({
+                    id: `R2-M${m}`,
+                    phase: `Loser R2 Match ${m - 3}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R3-M${Math.floor((m - 4) / 2) + 2}`, 
+                    nextMatchPos: (m - 4) % 2 === 0 ? 't1' : 't2'
+                });
+            }
+            rounds.push(r2);
+
+            // Round 3
+            const r3 = [];
+            // Winner Semis (M0, M1)
+            for (let m = 0; m < 2; m++) {
+                r3.push({
+                    id: `R3-M${m}`,
+                    phase: `Winner Semis ${m+1}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: 'R4-M0',
+                    nextMatchPos: m === 0 ? 't1' : 't2',
+                    nextLoserMatchId: `R6-M${m}`, 
+                    nextLoserMatchPos: 't1'
+                });
+            }
+            // Loser R3 (M2 to M5)
+            for (let m = 2; m < 6; m++) {
+                r3.push({
+                    id: `R3-M${m}`,
+                    phase: `Loser R3 Match ${m - 1}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R4-M${m - 1}`, 
+                    nextMatchPos: 't2'
+                });
+            }
+            rounds.push(r3);
+
+            // Round 4
+            const r4 = [];
+            // Winner Final (M0)
+            r4.push({
+                id: 'R4-M0',
+                phase: 'Winner Final',
+                t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                nextMatchId: 'R9-M0',
+                nextMatchPos: 't1',
+                nextLoserMatchId: 'R8-M0',
+                nextLoserMatchPos: 't1' 
+            });
+            // Loser R4 (M1 to M4)
+            for (let m = 1; m < 5; m++) {
+                r4.push({
+                    id: `R4-M${m}`,
+                    phase: `Loser R4 Match ${m}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R5-M${Math.floor((m - 1) / 2)}`, 
+                    nextMatchPos: (m - 1) % 2 === 0 ? 't1' : 't2'
+                });
+            }
+            rounds.push(r4);
+
+            // Round 5
+            const r5 = [];
+            // Loser R5 (M0, M1)
+            for (let m = 0; m < 2; m++) {
+                r5.push({
+                    id: `R5-M${m}`,
+                    phase: `Loser R5 Match ${m+1}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: `R6-M${m}`, 
+                    nextMatchPos: 't2'
+                });
+            }
+            rounds.push(r5);
+
+            // Round 6
+            const r6 = [];
+            // Loser Semis 1 (M0, M1)
+            for (let m = 0; m < 2; m++) {
+                r6.push({
+                    id: `R6-M${m}`,
+                    phase: `Loser Semis 1 Match ${m+1}`,
+                    t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                    nextMatchId: 'R7-M0',
+                    nextMatchPos: m === 0 ? 't1' : 't2'
+                });
+            }
+            rounds.push(r6);
+
+            // Round 7
+            const r7 = [];
+            // Loser Semis 2 (M0)
+            r7.push({
+                id: 'R7-M0',
+                phase: 'Loser Semis 2',
+                t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                nextMatchId: 'R8-M0',
+                nextMatchPos: 't2'
+            });
+            rounds.push(r7);
+
+            // Round 8
+            const r8 = [];
+            // Loser Final (M0)
+            r8.push({
+                id: 'R8-M0',
+                phase: 'Loser Final',
+                t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null,
+                nextMatchId: 'R9-M0',
+                nextMatchPos: 't2'
+            });
+            rounds.push(r8);
+
+            // Round 9
+            const r9 = [];
+            // Grand Final (M0)
+            r9.push({
+                id: 'R9-M0',
+                phase: 'Grand Final',
+                t1: null, t2: null, s1: null, s2: null, s1_v: null, s2_v: null, p1: null, p2: null
+            });
+            rounds.push(r9);
+        }
+        
+        state.bracketRounds = rounds;
+    }
+
+    // --- TRANSICIÓN DE LIGA A PLAYOFFS CON CONFIGURACIÓN ---
+    function openPlayoffsSetupModal() {
+        if (!state.groups || state.groups.length === 0) return;
+        const table = getGroupTable(state.groups[0]);
+        const totalTeams = table.length;
+
+        const playoffsSetupModal = document.getElementById('playoffs-setup-modal');
+        const playoffsTypeSelect = document.getElementById('playoffs-type-select');
+        
+        if (playoffsTypeSelect) {
+            playoffsTypeSelect.value = 'direct';
+        }
+        populatePlayoffsQtySelect(totalTeams, 'direct');
+        updatePlayoffsInfoBanner('direct');
+
+        if (playoffsSetupModal) {
+            playoffsSetupModal.classList.remove('hidden');
+        }
+    }
+
+    function populatePlayoffsQtySelect(totalTeams, selectedType) {
+        const playoffsQtySelect = document.getElementById('playoffs-qty-select');
+        if (!playoffsQtySelect) return;
+        
+        playoffsQtySelect.innerHTML = '';
+        let sizes = [];
+        if (selectedType === 'advantage') {
+            sizes = [4, 5, 8, 16, 32];
+        } else {
+            sizes = [2, 4, 8, 16, 32];
+        }
+        
+        let added = false;
+        sizes.forEach(size => {
+            if (size <= totalTeams) {
+                const opt = document.createElement('option');
+                opt.value = size;
+                opt.textContent = `${size} Equipos`;
+                playoffsQtySelect.appendChild(opt);
+                added = true;
+            }
+        });
+        
+        if (!added) {
+            const opt = document.createElement('option');
+            opt.value = totalTeams;
+            opt.textContent = `${totalTeams} Equipos`;
+            playoffsQtySelect.appendChild(opt);
+        }
+    }
+
+    function updatePlayoffsInfoBanner(selectedType) {
+        const playoffsInfoBanner = document.getElementById('playoffs-info-banner');
+        if (!playoffsInfoBanner) return;
+        
+        if (selectedType === 'advantage') {
+            playoffsInfoBanner.textContent = "🏆 Winner + Loser Bracket (Ventaja al 1°): Si pierdes en el Winner Bracket, caes al Loser Bracket para tener una segunda oportunidad. ¡El 1er lugar de la liga tiene ventaja especial y entra más tarde!";
+            playoffsInfoBanner.style.color = '#FFD700';
+            playoffsInfoBanner.style.borderColor = 'rgba(255, 215, 0, 0.3)';
+            playoffsInfoBanner.style.background = 'rgba(255, 215, 0, 0.1)';
+        } else {
+            playoffsInfoBanner.textContent = "⚔️ Eliminación Directa Estándar: Llave clásica basada en potencias de 2 (2, 4, 8, 16, 32 equipos). El que pierde un partido queda eliminado al instante.";
+            playoffsInfoBanner.style.color = '#00F0FF';
+            playoffsInfoBanner.style.borderColor = 'rgba(0, 240, 255, 0.3)';
+            playoffsInfoBanner.style.background = 'rgba(0, 240, 255, 0.1)';
+        }
+    }
+
+    function runPlayoffsTransition(targetSize, type) {
         if (!state.groups || state.groups.length === 0) return;
         const table = getGroupTable(state.groups[0]);
         
-        // Find maximum power of 2 that is <= total teams
-        const validPowers = [2, 4, 8, 16, 32];
-        let targetSize = 2;
-        for (let v of validPowers) {
-            if (v <= table.length) targetSize = v;
-        }
-        
         // Slice top teams
-        const topTeams = table.slice(0, targetSize).map(t => ({...t, qualType: 'direct'}));
+        const topTeams = table.slice(0, targetSize).map(t => ({
+            id: t.id,
+            name: t.name,
+            ptsAvg: 0,
+            dgAvg: 0,
+            gfAvg: 0,
+            qualType: 'direct'
+        }));
         
-        const roundsCount = Math.log2(targetSize);
         state.bracketRounds = [];
-
-        for(let r=0; r<roundsCount; r++) {
-            const matchesInRound = targetSize / Math.pow(2, r+1);
-            const roundMatches = [];
-            for(let m=0; m<matchesInRound; m++) {
-                roundMatches.push({
-                    id: `R${r}-M${m}`,
-                    t1: null, t2: null,
-                    s1: null, s2: null,
-                    s1_v: null, s2_v: null,
-                    p1: null, p2: null,
-                    nextMatchId: r < roundsCount - 1 ? `R${r+1}-M${Math.floor(m/2)}` : null,
-                    nextMatchPos: m % 2 === 0 ? 't1' : 't2'
-                });
+        
+        if (type === 'advantage') {
+            state.bracketFormatType = 'advantage';
+            generateAdvantageBracket(topTeams, targetSize);
+        } else {
+            state.bracketFormatType = 'direct';
+            const roundsCount = Math.log2(targetSize);
+            for(let r=0; r<roundsCount; r++) {
+                const matchesInRound = targetSize / Math.pow(2, r+1);
+                const roundMatches = [];
+                for(let m=0; m<matchesInRound; m++) {
+                    roundMatches.push({
+                        id: `R${r}-M${m}`,
+                        t1: null, t2: null,
+                        s1: null, s2: null,
+                        s1_v: null, s2_v: null,
+                        p1: null, p2: null,
+                        nextMatchId: r < roundsCount - 1 ? `R${r+1}-M${Math.floor(m/2)}` : null,
+                        nextMatchPos: m % 2 === 0 ? 't1' : 't2'
+                    });
+                }
+                state.bracketRounds.push(roundMatches);
             }
-            state.bracketRounds.push(roundMatches);
-        }
 
-        function getBracketOrder(numTeams) {
-            if (numTeams === 2) return [1, 2];
-            const half = getBracketOrder(numTeams / 2);
-            const res = [];
-            half.forEach(seed => {
-                res.push(seed);
-                res.push(numTeams - seed + 1);
-            });
-            return res;
-        }
+            function getBracketOrder(numTeams) {
+                if (numTeams === 2) return [1, 2];
+                const half = getBracketOrder(numTeams / 2);
+                const res = [];
+                half.forEach(seed => {
+                    res.push(seed);
+                    res.push(numTeams - seed + 1);
+                });
+                return res;
+            }
 
-        const seedOrder = getBracketOrder(targetSize);
-        for (let i = 0; i < targetSize / 2; i++) {
-            const t1Rank = seedOrder[i * 2] - 1;
-            const t2Rank = seedOrder[i * 2 + 1] - 1;
-            state.bracketRounds[0][i].t1 = topTeams[t1Rank] || null;
-            state.bracketRounds[0][i].t2 = topTeams[t2Rank] || null;
+            const seedOrder = getBracketOrder(targetSize);
+            for (let i = 0; i < targetSize / 2; i++) {
+                const t1Rank = seedOrder[i * 2] - 1;
+                const t2Rank = seedOrder[i * 2 + 1] - 1;
+                state.bracketRounds[0][i].t1 = topTeams[t1Rank] || null;
+                state.bracketRounds[0][i].t2 = topTeams[t2Rank] || null;
+            }
         }
 
         state.bracketGenerated = true;
         
-        // Hide modal
+        // Hide modals
         const champModal = document.getElementById('champion-modal');
         if (champModal) champModal.classList.add('hidden');
+        const setupModal = document.getElementById('playoffs-setup-modal');
+        if (setupModal) setupModal.classList.add('hidden');
 
         // Update UI Context
         window.updateAppTheme();
@@ -2345,7 +2783,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnLigaToCopa = document.getElementById('btn-liga-to-copa');
     if (btnLigaToCopa) {
-        btnLigaToCopa.addEventListener('click', transitionLigaToCopa);
+        btnLigaToCopa.addEventListener('click', openPlayoffsSetupModal);
     }
     
     const btnLigaPlayoffsInline = document.getElementById('btn-liga-playoffs-inline');
@@ -2359,30 +2797,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Modo Espectador: Acción no permitida 👁️');
                     return;
                 }
-                transitionLigaToCopa();
+                openPlayoffsSetupModal();
             }
         });
     }
 
-    const btnN4Semis = document.getElementById('btn-n4-semis');
-    if (btnN4Semis) {
-        btnN4Semis.addEventListener('click', () => {
-            if (state.isSpectator) return showToast('Modo Espectador: Acción no permitida 👁️');
-            state.n4Choice = 'semis';
-            if (!state.bracketGenerated) generateBracket();
-            showView(document.getElementById('bracket-view'));
-            if (typeof saveTournament === 'function') saveTournament();
+    const playoffsTypeSelect = document.getElementById('playoffs-type-select');
+    if (playoffsTypeSelect) {
+        playoffsTypeSelect.addEventListener('change', () => {
+            if (!state.groups || state.groups.length === 0) return;
+            const table = getGroupTable(state.groups[0]);
+            const totalTeams = table.length;
+            const selectedType = playoffsTypeSelect.value;
+
+            populatePlayoffsQtySelect(totalTeams, selectedType);
+            updatePlayoffsInfoBanner(selectedType);
         });
     }
 
-    const btnN4Final = document.getElementById('btn-n4-final');
-    if (btnN4Final) {
-        btnN4Final.addEventListener('click', () => {
-            if (state.isSpectator) return showToast('Modo Espectador: Acción no permitida 👁️');
-            state.n4Choice = 'final';
-            if (!state.bracketGenerated) generateBracket();
-            showView(document.getElementById('bracket-view'));
-            if (typeof saveTournament === 'function') saveTournament();
+    const btnCancelPlayoffs = document.getElementById('btn-cancel-playoffs');
+    if (btnCancelPlayoffs) {
+        btnCancelPlayoffs.addEventListener('click', () => {
+            const setupModal = document.getElementById('playoffs-setup-modal');
+            if (setupModal) setupModal.classList.add('hidden');
+        });
+    }
+
+    const btnStartPlayoffs = document.getElementById('btn-start-playoffs');
+    if (btnStartPlayoffs) {
+        btnStartPlayoffs.addEventListener('click', () => {
+            const playoffsQtySelect = document.getElementById('playoffs-qty-select');
+            const targetSize = playoffsQtySelect ? parseInt(playoffsQtySelect.value) : 4;
+            const typeSelect = document.getElementById('playoffs-type-select');
+            const type = typeSelect ? typeSelect.value : 'direct';
+            runPlayoffsTransition(targetSize, type);
         });
     }
 
