@@ -301,6 +301,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const copaScheduleSelect = document.getElementById('copa-schedule-select');
         if (copaScheduleSelect) copaScheduleSelect.value = 'single';
         
+        const copaTypeSelect = document.getElementById('copa-type-select');
+        if (copaTypeSelect) copaTypeSelect.value = 'direct';
+        
         const leagueScheduleSelect = document.getElementById('league-schedule-select');
         if (leagueScheduleSelect) leagueScheduleSelect.value = 'double';
         
@@ -775,6 +778,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const copaScheduleSelect = document.getElementById('copa-schedule-select');
             state.knockoutFormat = copaScheduleSelect ? copaScheduleSelect.value : 'single';
+            
+            const copaTypeSelect = document.getElementById('copa-type-select');
+            state.bracketFormatType = copaTypeSelect ? copaTypeSelect.value : 'direct';
+            
             const bracketFormatSelect = document.getElementById('bracket-format-select');
             if(bracketFormatSelect) bracketFormatSelect.value = state.knockoutFormat;
         }
@@ -1319,6 +1326,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- BRACKET LOGIC ---
     btnToBracket.addEventListener('click', () => {
+        if (state.bracketGenerated) {
+            showView(bracketView);
+            return;
+        }
+
+        if (state.format === 'champions') {
+            const allFinished = state.groups.every(g => g.matches.every(m => m.isFinished && m.s1 !== null && m.s2 !== null));
+            if (!allFinished) {
+                showToast('⚠️ Completa todos los partidos de la fase de grupos primero');
+                return;
+            }
+            openPlayoffsSetupModal();
+            return;
+        }
+
         generateBracket();
         showView(bracketView);
     });
@@ -1364,8 +1386,15 @@ document.addEventListener('DOMContentLoaded', () => {
              return b.gfAvg - a.gfAvg;
         });
 
-        const roundsCount = Math.log2(targetSize);
         state.bracketRounds = [];
+        
+        if (state.bracketFormatType === 'advantage' && targetSize >= 4) {
+            generateAdvantageBracket(qualified, targetSize);
+            drawBracket();
+            return;
+        }
+
+        const roundsCount = Math.log2(targetSize);
 
         for(let r=0; r<roundsCount; r++) {
             const matchesInRound = targetSize / Math.pow(2, r+1);
@@ -2826,11 +2855,17 @@ document.addEventListener('DOMContentLoaded', () => {
         state.bracketRounds = rounds;
     }
 
-    // --- TRANSICIÓN DE LIGA A PLAYOFFS CON CONFIGURACIÓN ---
     function openPlayoffsSetupModal() {
         if (!state.groups || state.groups.length === 0) return;
-        const table = getGroupTable(state.groups[0]);
-        const totalTeams = table.length;
+        
+        let totalTeams = 0;
+        if (state.format === 'liga') {
+            const table = getGroupTable(state.groups[0]);
+            totalTeams = table.length;
+        } else if (state.format === 'champions') {
+            const cfg = getFormatConfig(state.participants.length);
+            totalTeams = cfg.target;
+        }
 
         // Ocultar modal de campeón inmediatamente para que no tape la interfaz
         const champModal = document.getElementById('champion-modal');
@@ -2857,6 +2892,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!playoffsQtySelect) return;
         
         playoffsQtySelect.innerHTML = '';
+        
+        if (state.format === 'champions') {
+            const opt = document.createElement('option');
+            opt.value = totalTeams;
+            opt.textContent = `${totalTeams} Equipos`;
+            playoffsQtySelect.appendChild(opt);
+            playoffsQtySelect.disabled = true;
+            playoffsQtySelect.style.opacity = '0.6';
+            playoffsQtySelect.style.cursor = 'not-allowed';
+            return;
+        }
+
         let sizes = [];
         if (selectedType === 'advantage') {
             sizes = [4, 5, 8, 16, 32];
@@ -2905,17 +2952,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function runPlayoffsTransition(targetSize, type) {
         if (!state.groups || state.groups.length === 0) return;
-        const table = getGroupTable(state.groups[0]);
         
-        // Slice top teams
-        const topTeams = table.slice(0, targetSize).map(t => ({
-            id: t.id,
-            name: t.name,
-            ptsAvg: 0,
-            dgAvg: 0,
-            gfAvg: 0,
-            qualType: 'direct'
-        }));
+        let topTeams = [];
+        if (state.format === 'liga') {
+            const table = getGroupTable(state.groups[0]);
+            topTeams = table.slice(0, targetSize).map(t => ({
+                id: t.id,
+                name: t.name,
+                ptsAvg: 0,
+                dgAvg: 0,
+                gfAvg: 0,
+                qualType: 'direct'
+            }));
+        } else if (state.format === 'champions') {
+            const cfg = getFormatConfig(state.participants.length);
+            const groupTables = state.groups.map(g => getGroupTable(g));
+            topTeams = getQualifiersFromTables(groupTables, cfg);
+            
+            if (topTeams.length !== targetSize) {
+                topTeams = topTeams.slice(0, targetSize);
+            }
+            
+            // Sort optimally for bracket seeding
+            topTeams.sort((a, b) => {
+                 if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
+                 if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
+                 return b.gfAvg - a.gfAvg;
+            });
+        }
         
         state.bracketRounds = [];
         
@@ -3011,8 +3075,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (playoffsTypeSelect) {
         playoffsTypeSelect.addEventListener('change', () => {
             if (!state.groups || state.groups.length === 0) return;
-            const table = getGroupTable(state.groups[0]);
-            const totalTeams = table.length;
+            let totalTeams = 0;
+            if (state.format === 'liga') {
+                const table = getGroupTable(state.groups[0]);
+                totalTeams = table.length;
+            } else if (state.format === 'champions') {
+                const cfg = getFormatConfig(state.participants.length);
+                totalTeams = cfg.target;
+            }
             const selectedType = playoffsTypeSelect.value;
 
             populatePlayoffsQtySelect(totalTeams, selectedType);
