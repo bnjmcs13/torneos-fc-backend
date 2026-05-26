@@ -155,6 +155,13 @@
                             <input type="number" id="custom-wildcards" min="0" max="32" value="0" />
                             <small class="helper-text">Ej: Los 2 mejores terceros.</small>
                         </div>
+                        <div class="input-group" style="margin-top: 1rem;">
+                            <label for="champions-type-select">Formato de las Llaves:</label>
+                            <select id="champions-type-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                                <option value="direct" selected>Eliminación Directa Estándar</option>
+                                <option value="advantage">Winner + Loser Bracket (con ventaja al 1°)</option>
+                            </select>
+                        </div>
                         
                         <div id="custom-valid-banner" class="custom-valid-banner valid">
                             Total Clasificados a Eliminatoria: <strong id="custom-total-target">8</strong>

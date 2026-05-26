@@ -304,6 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const copaTypeSelect = document.getElementById('copa-type-select');
         if (copaTypeSelect) copaTypeSelect.value = 'direct';
         
+        const championsTypeSelect = document.getElementById('champions-type-select');
+        if (championsTypeSelect) championsTypeSelect.value = 'direct';
+        
         const leagueScheduleSelect = document.getElementById('league-schedule-select');
         if (leagueScheduleSelect) leagueScheduleSelect.value = 'double';
         
@@ -764,6 +767,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 bestCount: bestCount,
                 target: target
             };
+
+            const championsTypeSelect = document.getElementById('champions-type-select');
+            state.bracketFormatType = championsTypeSelect ? championsTypeSelect.value : 'direct';
         }
 
         const inputs = playersList.querySelectorAll('input');
@@ -1337,7 +1343,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('⚠️ Completa todos los partidos de la fase de grupos primero');
                 return;
             }
-            openPlayoffsSetupModal();
+            const cfg = getFormatConfig(state.participants.length);
+            const targetSize = cfg.target;
+            const type = state.bracketFormatType || 'direct';
+            runPlayoffsTransition(targetSize, type);
             return;
         }
 
