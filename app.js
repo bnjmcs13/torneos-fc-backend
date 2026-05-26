@@ -549,9 +549,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const _cg = document.getElementById('custom-groups');
     const _cd = document.getElementById('custom-direct');
     const _cw = document.getElementById('custom-wildcards');
+    const _cts = document.getElementById('champions-type-select');
     if (_cg) _cg.addEventListener('input', calculateManualConfig);
     if (_cd) _cd.addEventListener('input', calculateManualConfig);
     if (_cw) _cw.addEventListener('input', calculateManualConfig);
+    if (_cts) _cts.addEventListener('change', calculateManualConfig);
 
     function calculateManualConfig() {
         const cg = document.getElementById('custom-groups');
@@ -570,7 +572,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const total = (gCount * direct) + wild;
         if (customTotalTarget) customTotalTarget.textContent = total;
 
-        const validTargets = [2, 4, 8, 16, 32];
+        const championsTypeSelect = document.getElementById('champions-type-select');
+        const isAdvantage = championsTypeSelect && championsTypeSelect.value === 'advantage';
+        const validTargets = isAdvantage ? [4, 5, 8, 16, 32] : [2, 4, 8, 16, 32];
+
+        if (customErrorText) {
+            if (isAdvantage) {
+                customErrorText.textContent = '⚠️ El total de clasificados debe ser 4, 5, 8, 16 o 32 para el formato Winner + Loser Bracket.';
+            } else {
+                customErrorText.textContent = '⚠️ El total de clasificados debe ser una potencia de 2 (2, 4, 8, 16 o 32) para las llaves eliminatorias.';
+            }
+        }
+
         if (validTargets.includes(total)) {
             if (customValidBanner) {
                 customValidBanner.classList.remove('invalid');
