@@ -52,7 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
         participants: [],
         groups: [],      // Array of { id, name, teams: [], matches: [] }
         shareCode: null,
-        isSpectator: false
+        isSpectator: false,
+        leaguePlayoffFormat: 'none',
+        leaguePlayoffQty: 4
     };
     
     document.getElementById('bracket-format-select').addEventListener('change', (e) => {
@@ -98,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cd) cd.value = rec.topN;
         if (cw) cw.value = rec.bestCount;
         if (typeof calculateManualConfig === 'function') calculateManualConfig();
+        if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
     }
 
     function getRecommendedConfig(n) {
@@ -140,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     initHome();
+    if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
 
     // Show toast
     function showToast(msg) {
@@ -282,6 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.celebratedLiga = false;
         state.celebratedCopa = false;
         state.customConfig = null;
+        state.leaguePlayoffFormat = 'none';
+        state.leaguePlayoffQty = 4;
         
         // Reset DOM Inputs
         const tournamentNameInput = document.getElementById('tournament-name');
@@ -306,6 +312,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const championsTypeSelect = document.getElementById('champions-type-select');
         if (championsTypeSelect) championsTypeSelect.value = 'direct';
+        
+        state.leaguePlayoffFormat = 'none';
+        state.leaguePlayoffQty = 4;
+        const leaguePlayoffsSelect = document.getElementById('league-playoffs-select');
+        if (leaguePlayoffsSelect) {
+            leaguePlayoffsSelect.value = 'none';
+            if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
+        }
         
         const leagueScheduleSelect = document.getElementById('league-schedule-select');
         if (leagueScheduleSelect) leagueScheduleSelect.value = 'double';
@@ -508,6 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof customChampionsConfig !== 'undefined' && customChampionsConfig) customChampionsConfig.classList.add('hidden');
                 if (leagueConfig) leagueConfig.classList.remove('hidden');
                 if (copaConfig) copaConfig.classList.add('hidden');
+                if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
             }
             else if (state.format === 'copa') {
                 headerTitle.textContent = 'COPA';
@@ -550,10 +565,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const _cd = document.getElementById('custom-direct');
     const _cw = document.getElementById('custom-wildcards');
     const _cts = document.getElementById('champions-type-select');
+    const _lps = document.getElementById('league-playoffs-select');
     if (_cg) _cg.addEventListener('input', calculateManualConfig);
     if (_cd) _cd.addEventListener('input', calculateManualConfig);
     if (_cw) _cw.addEventListener('input', calculateManualConfig);
     if (_cts) _cts.addEventListener('change', calculateManualConfig);
+    if (_lps) _lps.addEventListener('change', updateLeaguePlayoffsQtySelect);
 
     function calculateManualConfig() {
         const cg = document.getElementById('custom-groups');
@@ -599,6 +616,54 @@ document.addEventListener('DOMContentLoaded', () => {
             if (customErrorText) customErrorText.classList.remove('hidden');
             isManualConfigValid = false;
         }
+    }
+
+    function updateLeaguePlayoffsQtySelect() {
+        const lpSelect = document.getElementById('league-playoffs-select');
+        const lpQtyContainer = document.getElementById('league-playoffs-qty-container');
+        const lpQtySelect = document.getElementById('league-playoffs-qty-select');
+        const numPlayersInput = document.getElementById('num-players');
+        
+        if (!lpSelect || !lpQtyContainer || !lpQtySelect || !numPlayersInput) return;
+        
+        const format = lpSelect.value;
+        const totalTeams = parseInt(numPlayersInput.value) || 2;
+        
+        if (format === 'none') {
+            lpQtyContainer.classList.add('hidden');
+            return;
+        }
+        
+        lpQtyContainer.classList.remove('hidden');
+        lpQtySelect.innerHTML = '';
+        
+        let sizes = [];
+        if (format === 'advantage') {
+            sizes = [4, 5, 8, 16, 32];
+            lpQtySelect.disabled = false;
+            lpQtySelect.style.opacity = '1';
+            lpQtySelect.style.cursor = 'default';
+        } else {
+            // Find valid powers of 2 <= totalTeams
+            const validPowers = [2, 4, 8, 16, 32];
+            let maxPower = 2;
+            for (let v of validPowers) {
+                if (v <= totalTeams) maxPower = v;
+            }
+            sizes = [maxPower];
+            lpQtySelect.disabled = true;
+            lpQtySelect.style.opacity = '0.6';
+            lpQtySelect.style.cursor = 'not-allowed';
+        }
+        
+        sizes.forEach(size => {
+            if (size <= totalTeams) {
+                const opt = document.createElement('option');
+                opt.value = size;
+                opt.textContent = `${size} Equipos`;
+                lpQtySelect.appendChild(opt);
+            }
+        });
     }
 
     // Event listeners now managed above calculateManualConfig
@@ -783,6 +848,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const championsTypeSelect = document.getElementById('champions-type-select');
             state.bracketFormatType = championsTypeSelect ? championsTypeSelect.value : 'direct';
+        } else if (state.format === 'liga') {
+            const leaguePlayoffsSelect = document.getElementById('league-playoffs-select');
+            const leaguePlayoffsQtySelect = document.getElementById('league-playoffs-qty-select');
+            state.leaguePlayoffFormat = leaguePlayoffsSelect ? leaguePlayoffsSelect.value : 'none';
+            state.leaguePlayoffQty = leaguePlayoffsQtySelect ? parseInt(leaguePlayoffsQtySelect.value) : 4;
+            state.bracketFormatType = state.leaguePlayoffFormat;
         }
 
         const inputs = playersList.querySelectorAll('input');
@@ -1285,6 +1356,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         const allMatchesPlayed = group.matches.every(m => m.isFinished && m.s1 !== null && m.s2 !== null);
                         if (allMatchesPlayed && !state.celebratedLiga) {
                             state.celebratedLiga = true;
+                            
+                            // Trigger playoffs transition automatically if playoffs configured
+                            if (state.leaguePlayoffFormat && state.leaguePlayoffFormat !== 'none' && !state.bracketGenerated) {
+                                runPlayoffsTransition(state.leaguePlayoffQty, state.leaguePlayoffFormat);
+                                showToast('🏆 ¡Liga completada! Generando Playoffs automáticamente...');
+                            }
+                            
                             if (typeof saveTournament === 'function') saveTournament();
 
                             // Get Champion
@@ -1293,15 +1371,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             const champModal = document.getElementById('champion-modal');
                             const champName = document.getElementById('champion-name');
+                            const champSub = document.getElementById('champion-sub');
+                            const champDesc = document.getElementById('champion-desc');
                             const btnLigaToCopa = document.getElementById('btn-liga-to-copa');
+                            
                             if (champModal && champName) {
                                 champName.textContent = champion.name;
                                 champModal.classList.remove('hidden');
 
-                                if (state.format === 'liga' && btnLigaToCopa) {
-                                    btnLigaToCopa.classList.remove('hidden');
-                                } else if (btnLigaToCopa) {
-                                    btnLigaToCopa.classList.add('hidden');
+                                if (state.leaguePlayoffFormat && state.leaguePlayoffFormat !== 'none') {
+                                    if (champSub) champSub.textContent = '¡GANADOR DE LA FASE DE LIGA!';
+                                    if (champDesc) champDesc.textContent = 'Clasificado como 1° lugar a los Playoffs';
+                                    if (btnLigaToCopa) {
+                                        btnLigaToCopa.textContent = '🏆 Jugar Playoffs 🏆';
+                                        btnLigaToCopa.classList.remove('hidden');
+                                    }
+                                } else {
+                                    if (champSub) champSub.textContent = '¡CAMPEÓN DEFINITIVO!';
+                                    if (champDesc) champDesc.textContent = 'Ha conquistado la liga suprema';
+                                    if (btnLigaToCopa) btnLigaToCopa.classList.add('hidden');
                                 }
 
                                 // Confetti Burst!
@@ -3074,7 +3162,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnLigaToCopa = document.getElementById('btn-liga-to-copa');
     if (btnLigaToCopa) {
-        btnLigaToCopa.addEventListener('click', openPlayoffsSetupModal);
+        btnLigaToCopa.addEventListener('click', () => {
+            const champModal = document.getElementById('champion-modal');
+            if (champModal) champModal.classList.add('hidden');
+            
+            if (state.leaguePlayoffFormat && state.leaguePlayoffFormat !== 'none') {
+                if (!state.bracketGenerated) {
+                    runPlayoffsTransition(state.leaguePlayoffQty, state.leaguePlayoffFormat);
+                } else {
+                    const bracketView = document.getElementById('bracket-view');
+                    if (bracketView) showView(bracketView);
+                }
+            } else {
+                openPlayoffsSetupModal();
+            }
+        });
     }
     
     const btnLigaPlayoffsInline = document.getElementById('btn-liga-playoffs-inline');
@@ -3088,7 +3190,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Modo Espectador: Acción no permitida 👁️');
                     return;
                 }
-                openPlayoffsSetupModal();
+                if (state.leaguePlayoffFormat && state.leaguePlayoffFormat !== 'none') {
+                    runPlayoffsTransition(state.leaguePlayoffQty, state.leaguePlayoffFormat);
+                } else {
+                    openPlayoffsSetupModal();
+                }
             }
         });
     }

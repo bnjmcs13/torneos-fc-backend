@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=3">
+    <link rel="stylesheet" href="style_mobile.css?v=5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -205,6 +205,18 @@
                             <option value="eredivisie">Eredivisie (Países Bajos)</option>
                             <option value="primeira">Primeira Liga (Portugal)</option>
                         </select>
+                    </div>
+                    <div class="input-group" style="margin-top: 1rem;">
+                        <label for="league-playoffs-select">¿Jugar Playoffs al finalizar la liga?:</label>
+                        <select id="league-playoffs-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                            <option value="none" selected>No, solo fase de Liga</option>
+                            <option value="direct">Sí, Eliminación Directa Estándar</option>
+                            <option value="advantage">Sí, Winner + Loser Bracket (con ventaja al 1°)</option>
+                        </select>
+                    </div>
+                    <div id="league-playoffs-qty-container" class="input-group hidden" style="margin-top: 1rem;">
+                        <label for="league-playoffs-qty-select">Cantidad de Clasificados a Playoffs:</label>
+                        <select id="league-playoffs-qty-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);"></select>
                     </div>
                 </div>
                 
@@ -410,6 +422,6 @@
         }
     </script>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
