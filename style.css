@@ -401,9 +401,13 @@ button {
 }
 .hero-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 1.5rem;
     justify-content: center;
     margin-bottom: 3rem;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
 }
 .hero-btn {
     font-size: 1.2rem;
@@ -1593,6 +1597,18 @@ body.theme-champions #bracket-view::before {
     }
     .champion-content {
         padding: 1rem;
+    }
+    .champion-actions-wrapper {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        max-width: 320px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    .champion-actions-wrapper button {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
     }
     
     /* Features */

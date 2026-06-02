@@ -381,6 +381,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnImportFile = document.getElementById('btn-import-file');
+    const inputImportFile = document.getElementById('input-import-file');
+    if (btnImportFile && inputImportFile) {
+        btnImportFile.addEventListener('click', () => {
+            inputImportFile.click();
+        });
+        inputImportFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                importTournamentFromFile(file);
+                e.target.value = '';
+            }
+        });
+    }
+
     if (btnHeroContinue) {
         btnHeroContinue.addEventListener('click', () => {
             const lastId = btnHeroContinue.getAttribute('data-id');
@@ -396,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnMenuSaved = document.getElementById('btn-menu-saved');
     const btnMenuStats = document.getElementById('btn-menu-stats');
     const btnMenuReset = document.getElementById('btn-menu-reset');
+    const btnMenuDownload = document.getElementById('btn-menu-download');
 
     const btnMenuSetup = document.getElementById('btn-menu-setup');
     const btnMenuGroups = document.getElementById('btn-menu-groups');
@@ -425,6 +441,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnMenuToggle.addEventListener('click', (e) => {
         e.stopPropagation();
+        
+        // Dynamically toggle download button based on active tournament state
+        if (btnMenuDownload) {
+            if (state && state.id && state.format && state.participants && state.participants.length > 0) {
+                btnMenuDownload.classList.remove('hidden');
+            } else {
+                btnMenuDownload.classList.add('hidden');
+            }
+        }
+        
         dropdownMenu.classList.toggle('show');
     });
 
@@ -447,6 +473,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showView(formatView, false);
         dropdownMenu.classList.remove('show');
     });
+
+    if (btnMenuDownload) {
+        btnMenuDownload.addEventListener('click', () => {
+            downloadTournamentData();
+            dropdownMenu.classList.remove('show');
+        });
+    }
 
 
     btnMenuSaved.addEventListener('click', () => {
@@ -2049,6 +2082,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // DOWNLOAD & IMPORT LOGIC
+    function downloadTournamentData() {
+        if (!state.format || state.participants.length === 0) {
+            showToast('No hay ningún torneo activo para descargar ⚠️');
+            return;
+        }
+        if (!state.id) state.id = 'T-' + Date.now();
+        if (!state.name) {
+            const inputName = document.getElementById('tournament-name').value.trim();
+            state.name = inputName || `Torneo ${state.format.toUpperCase()} - ${new Date().toLocaleDateString()}`;
+        }
+        state.lastSaved = new Date().toLocaleString();
+        
+        // Save to localStorage too so their downloaded copy is synced with local state
+        let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
+        const existingIdx = stored.findIndex(t => t.id === state.id);
+        if (existingIdx >= 0) {
+            stored[existingIdx] = state;
+        } else {
+            stored.push(state);
+        }
+        localStorage.setItem('torneos-fc-data', JSON.stringify(stored));
+        if (typeof initHome === 'function') initHome();
+        if (typeof renderSavedTournaments === 'function') renderSavedTournaments();
+
+        const dataStr = JSON.stringify(state, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        const cleanName = (state.name || 'torneo').toLowerCase().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-');
+        a.download = `${cleanName}-${state.shareCode || state.id}.json`;
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showToast('Torneo descargado con éxito 📥');
+    }
+
+    function importTournamentFromFile(file) {
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                
+                if (!parsed.id || !parsed.format || !parsed.participants || !Array.isArray(parsed.participants)) {
+                    showToast('Archivo inválido. No es un torneo de Torneos FC ⚠️');
+                    return;
+                }
+                
+                let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
+                const existingIdx = stored.findIndex(t => t.id === parsed.id);
+                if (existingIdx >= 0) {
+                    if (confirm(`Ya existe un torneo con el nombre "${parsed.name || 'Sin nombre'}". ¿Deseas sobreescribirlo/actualizarlo?`)) {
+                        stored[existingIdx] = parsed;
+                    } else {
+                        parsed.id = 'T-' + Date.now();
+                        parsed.name = `${parsed.name || 'Torneo'} (Copia)`;
+                        stored.push(parsed);
+                    }
+                } else {
+                    stored.push(parsed);
+                }
+                
+                localStorage.setItem('torneos-fc-data', JSON.stringify(stored));
+                
+                if (typeof initHome === 'function') initHome();
+                if (typeof renderSavedTournaments === 'function') renderSavedTournaments();
+                
+                window.loadTournament(parsed.id);
+                showToast('Torneo importado con éxito 📥✅');
+                
+            } catch (err) {
+                console.error('Error parsing JSON file:', err);
+                showToast('Error al leer el archivo JSON ⚠️');
+            }
+        };
+        reader.readAsText(file);
+    }
+
     // SAVE LOGIC
     async function saveTournament() {
         if (state.isSpectator) {
@@ -2468,6 +2586,13 @@ document.addEventListener('DOMContentLoaded', () => {
             championModal.classList.add('hidden');
             calculateAndDrawStats();
             showView(document.getElementById('stats-view'), true);
+        });
+    }
+
+    const btnDownloadChampion = document.getElementById('btn-download-champion');
+    if (btnDownloadChampion) {
+        btnDownloadChampion.addEventListener('click', () => {
+            downloadTournamentData();
         });
     }
 
