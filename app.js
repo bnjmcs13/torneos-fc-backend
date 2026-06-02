@@ -412,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnMenuStats = document.getElementById('btn-menu-stats');
     const btnMenuReset = document.getElementById('btn-menu-reset');
     const btnMenuDownload = document.getElementById('btn-menu-download');
+    const btnMenuShare = document.getElementById('btn-menu-share');
 
     const btnMenuSetup = document.getElementById('btn-menu-setup');
     const btnMenuGroups = document.getElementById('btn-menu-groups');
@@ -450,6 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnMenuDownload.classList.add('hidden');
             }
         }
+        if (btnMenuShare) {
+            if (state && state.id && state.format && state.participants && state.participants.length > 0) {
+                btnMenuShare.classList.remove('hidden');
+            } else {
+                btnMenuShare.classList.add('hidden');
+            }
+        }
         
         dropdownMenu.classList.toggle('show');
     });
@@ -477,6 +485,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnMenuDownload) {
         btnMenuDownload.addEventListener('click', () => {
             downloadTournamentData();
+            dropdownMenu.classList.remove('show');
+        });
+    }
+
+    if (btnMenuShare) {
+        btnMenuShare.addEventListener('click', () => {
+            shareTournamentLink();
             dropdownMenu.classList.remove('show');
         });
     }
@@ -2082,6 +2097,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function shareTournamentLink() {
+        if (!state.format || state.participants.length === 0) {
+            showToast('No hay ningún torneo activo para compartir ⚠️');
+            return;
+        }
+
+        if (state.isSpectator && state.shareCode) {
+            const joinUrl = `${window.location.origin}${window.location.pathname}?join=${state.shareCode}`;
+            navigator.clipboard.writeText(joinUrl).then(() => {
+                showToast('¡Enlace de Espectador copiado! 👁️📋');
+            }).catch(err => {
+                showToast(`Código del Torneo: ${state.shareCode} 🔑`);
+            });
+            return;
+        }
+
+        // Save tournament state to the cloud to get fresh shareCode
+        showToast('Generando enlace para compartir... ⏳');
+        await saveTournament();
+
+        if (state.shareCode) {
+            const joinUrl = `${window.location.origin}${window.location.pathname}?join=${state.shareCode}`;
+            navigator.clipboard.writeText(joinUrl).then(() => {
+                showToast('¡Enlace copiado! Envíalo a tus amigos 🔗📋');
+            }).catch(err => {
+                showToast(`Código del Torneo: ${state.shareCode} 🔑`);
+            });
+        } else {
+            showToast('No se pudo generar el código de compartición ⚠️');
+        }
+    }
+
     // DOWNLOAD & IMPORT LOGIC
     function downloadTournamentData() {
         if (!state.format || state.participants.length === 0) {
@@ -2593,6 +2640,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnDownloadChampion) {
         btnDownloadChampion.addEventListener('click', () => {
             downloadTournamentData();
+        });
+    }
+
+    const btnShareChampion = document.getElementById('btn-share-champion');
+    if (btnShareChampion) {
+        btnShareChampion.addEventListener('click', () => {
+            shareTournamentLink();
         });
     }
 
