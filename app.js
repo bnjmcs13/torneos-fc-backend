@@ -124,6 +124,45 @@ document.addEventListener('DOMContentLoaded', () => {
     numPlayersInput.addEventListener('input', renderPlayerInputs);
     renderPlayerInputs();
 
+    // Auto-import via hash fragment for double-click self-extracting files
+    function checkHashImport() {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#import=')) {
+            const base64Data = hash.substring(8);
+            try {
+                const jsonStr = decodeURIComponent(escape(atob(base64Data)));
+                const parsed = JSON.parse(jsonStr);
+                
+                if (parsed && parsed.id && parsed.format && parsed.participants) {
+                    let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
+                    const existingIdx = stored.findIndex(t => t.id === parsed.id);
+                    if (existingIdx >= 0) {
+                        stored[existingIdx] = parsed;
+                    } else {
+                        stored.push(parsed);
+                    }
+                    localStorage.setItem('torneos-fc-data', JSON.stringify(stored));
+                    
+                    // Clear hash silently to keep clean URL
+                    history.replaceState("", document.title, window.location.pathname + window.location.search);
+                    
+                    // Force refresh home lists
+                    initHome();
+                    if (typeof renderSavedTournaments === 'function') renderSavedTournaments();
+                    
+                    // Load the imported tournament instantly
+                    setTimeout(() => {
+                        window.loadTournament(parsed.id);
+                        showToast('🏆 Torneo importado y cargado automáticamente 🏆');
+                    }, 150);
+                }
+            } catch (err) {
+                console.error('Error importing from hash:', err);
+                showToast('Error al importar el torneo desde el enlace ⚠️');
+            }
+        }
+    }
+
     // Init Home Screen State
     function initHome() {
         if (!heroContinueContainer) return;
@@ -143,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     initHome();
+    checkHashImport();
     if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
 
     // Show toast
@@ -2154,14 +2194,83 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof initHome === 'function') initHome();
         if (typeof renderSavedTournaments === 'function') renderSavedTournaments();
 
-        const dataStr = JSON.stringify(state, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
+        // Encode state safely into UTF-8 Base64 string
+        const stateJson = JSON.stringify(state);
+        const base64Data = btoa(unescape(encodeURIComponent(stateJson)));
+        const redirectDomain = window.location.origin + window.location.pathname;
+
+        // Build self-extracting HTML file
+        const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargando Torneo: ${state.name} - Torneos FC</title>
+    <style>
+        body {
+            background-color: #060B19;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            padding: 2.5rem 2rem;
+            background: rgba(20, 30, 60, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+        .trophy {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: #00F0FF;
+            animation: spin 1s linear infinite;
+            margin: 1.5rem auto;
+        }
+        h2 { margin: 0 0 0.5rem 0; color: #00F0FF; font-weight: 600; }
+        p { color: #9BA4B5; margin: 0; font-size: 0.9rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body>
+    <!-- #import=${base64Data} -->
+    <div class="container">
+        <div class="trophy">🏆</div>
+        <h2>Torneos FC</h2>
+        <p>Cargando e importando tu torneo automáticamente...</p>
+        <div class="spinner"></div>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Redireccionando a la aplicación...</p>
+    </div>
+    <script>
+        setTimeout(() => {
+            window.location.href = "${redirectDomain}#import=${base64Data}";
+        }, 800);
+    </script>
+</body>
+</html>`;
+
+        const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         
         const a = document.createElement('a');
         a.href = url;
         const cleanName = (state.name || 'torneo').toLowerCase().replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-');
-        a.download = `${cleanName}-${state.shareCode || state.id}.json`;
+        a.download = `${cleanName}-${state.shareCode || state.id}.html`;
         document.body.appendChild(a);
         a.click();
         
@@ -2177,7 +2286,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const parsed = JSON.parse(e.target.result);
+                const rawText = e.target.result.trim();
+                let jsonStr = "";
+                
+                if (rawText.startsWith('{')) {
+                    // It's a raw JSON file
+                    jsonStr = rawText;
+                } else if (rawText.includes('#import=')) {
+                    // Extract Base64 from the HTML launcher file
+                    const match = rawText.match(/#import=([A-Za-z0-9+/=]+)/);
+                    if (match && match[1]) {
+                        jsonStr = decodeURIComponent(escape(atob(match[1])));
+                    } else {
+                        showToast('No se pudo extraer la información del archivo HTML ⚠️');
+                        return;
+                    }
+                } else {
+                    showToast('Archivo no reconocido. Usa archivos de Torneos FC (.json o .html) ⚠️');
+                    return;
+                }
+
+                const parsed = JSON.parse(jsonStr);
                 
                 if (!parsed.id || !parsed.format || !parsed.participants || !Array.isArray(parsed.participants)) {
                     showToast('Archivo inválido. No es un torneo de Torneos FC ⚠️');
@@ -2207,8 +2336,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Torneo importado con éxito 📥✅');
                 
             } catch (err) {
-                console.error('Error parsing JSON file:', err);
-                showToast('Error al leer el archivo JSON ⚠️');
+                console.error('Error parsing file:', err);
+                showToast('Error al leer el archivo importado ⚠️');
             }
         };
         reader.readAsText(file);
