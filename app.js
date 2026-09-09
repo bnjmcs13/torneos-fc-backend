@@ -1146,20 +1146,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return Object.values(stats).map(st => {
             st.dg = st.gf - st.gc;
-            // Promedios para hacer justo los grupos iregulares
+            // Promedios para comparar posiciones entre grupos de distinto tamaño
             st.ptsAvg = st.p > 0 ? st.pts / st.p : 0;
             st.wAvg = st.p > 0 ? st.w / st.p : 0;
             st.dgAvg = st.p > 0 ? st.dg / st.p : 0;
             st.gfAvg = st.p > 0 ? st.gf / st.p : 0;
             return st;
         }).sort((a, b) => {
-            if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
-            if (state.format === 'liga') {
-                 if (b.wAvg !== a.wAvg) return b.wAvg - a.wAvg; // Brasileirao Rule: Wins > GD
-            }
-            if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
-            if (b.gfAvg !== a.gfAvg) return b.gfAvg - a.gfAvg;
-            return b.pts - a.pts; // Fallback
+            // 1. Puntos totales (quien tenga más puntos SIEMPRE va primero, sin importar PJ)
+            if (b.pts !== a.pts) return b.pts - a.pts;
+            // 2. Mayor diferencia de goles (DG)
+            if (b.dg !== a.dg) return b.dg - a.dg;
+            // 3. Mayor cantidad de goles a favor (GF)
+            if (b.gf !== a.gf) return b.gf - a.gf;
+            // 4. Mayor cantidad de partidos ganados (G)
+            if (b.w !== a.w) return b.w - a.w;
+            // 5. Menor cantidad de partidos jugados (PJ) si están empatados en todo lo anterior
+            return a.p - b.p;
         });
     }
 
@@ -1579,9 +1582,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Final ranking to seed the bracket optimally
         qualified.sort((a, b) => {
-             if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
-             if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
-             return b.gfAvg - a.gfAvg;
+             if (b.pts !== a.pts) return b.pts - a.pts;
+             if (b.dg !== a.dg) return b.dg - a.dg;
+             return b.gf - a.gf;
         });
 
         state.bracketRounds = [];
@@ -3393,9 +3396,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Sort optimally for bracket seeding
             topTeams.sort((a, b) => {
-                 if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
-                 if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
-                 return b.gfAvg - a.gfAvg;
+                 if (b.pts !== a.pts) return b.pts - a.pts;
+                 if (b.dg !== a.dg) return b.dg - a.dg;
+                 return b.gf - a.gf;
             });
         }
         
