@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=15">
+    <link rel="stylesheet" href="style_mobile.css?v=16">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -195,8 +195,7 @@
                         <label for="league-schedule-select">Formato de Partidos (Fase de Liga): <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
                         <select id="league-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
                             <option value="single">Partido Único (Solo Ida)</option>
-                            <option value="double" selected>Ida y Vuelta (Goles Acumulados)</option>
-                            <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
+                            <option value="double" selected>Ida y Vuelta</option>
                         </select>
                         <div id="league-schedule-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
                     </div>
@@ -409,6 +408,15 @@
                 </select>
             </div>
 
+            <div class="input-group" style="margin-top: 1rem; text-align: left;">
+                <label for="playoffs-match-format-select" style="color: #fff; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Modalidad de Partidos:</label>
+                <select id="playoffs-match-format-select" class="form-select" style="width: 100%; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: #fff; padding: 0.6rem; border-radius: 6px;">
+                    <option value="single">Partido Único</option>
+                    <option value="double" selected>Ida y Vuelta (Goles Acumulados)</option>
+                    <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
+                </select>
+            </div>
+
             <div id="playoffs-info-banner" style="margin-top: 1.2rem; padding: 0.75rem; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;">
                 Formato estándar de eliminación directa basado en llaves tradicionales.
             </div>
@@ -452,6 +460,6 @@
         }
     </script>
 
-    <script src="app.js?v=15"></script>
+    <script src="app.js?v=16"></script>
 </body>
 </html>

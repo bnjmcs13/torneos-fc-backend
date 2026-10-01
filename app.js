@@ -3594,6 +3594,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetSize = playoffsQtySelect ? parseInt(playoffsQtySelect.value) : 4;
             const typeSelect = document.getElementById('playoffs-type-select');
             const type = typeSelect ? typeSelect.value : 'direct';
+            
+            const matchFormatSelect = document.getElementById('playoffs-match-format-select');
+            if (matchFormatSelect) {
+                state.knockoutFormat = matchFormatSelect.value;
+            }
+
             runPlayoffsTransition(targetSize, type);
         });
     }
