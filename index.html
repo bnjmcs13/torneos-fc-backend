@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=26">
+    <link rel="stylesheet" href="style_mobile.css?v=27">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -181,9 +181,12 @@
 
         <!-- Vista de Formatos -->
         <section id="format-view" class="view">
-            <header>
-                <h1 class="champions-title">FORMATO</h1>
-                <p>Elige el tipo de competición</p>
+            <header class="view-header-with-back">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
+                <div class="header-titles">
+                    <h1 class="champions-title">FORMATO</h1>
+                    <p>Elige el tipo de competición</p>
+                </div>
             </header>
             
             <div class="format-cards-container">
@@ -209,6 +212,7 @@
         <!-- Vista de Configuración (Diseño Grid Modular 2x2) -->
         <section id="setup-view" class="view">
             <div class="navbar-header">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
                 <div class="nav-titles">
                     <h1 class="champions-title compact" id="setup-main-title">TORNEOS FC</h1>
                     <p id="setup-sub-title">Configuración del Torneo</p>
@@ -404,6 +408,7 @@
         <!-- Vista de Grupos -->
         <section id="groups-view" class="view">
             <div class="navbar-header">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
                 <div class="nav-titles">
                     <h1 id="groups-main-title" class="champions-title compact">FASE DE GRUPOS</h1>
                     <p id="groups-sub-title">Resultados</p>
@@ -441,6 +446,7 @@
         <!-- Vista de Eliminatorias (Bracket) -->
         <section id="bracket-view" class="view">
             <div class="navbar-header">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
                 <div class="nav-titles">
                     <h1 class="champions-title compact">FASE FINAL</h1>
                     <p>Eliminatorias</p>
@@ -465,9 +471,12 @@
 
         <!-- Vista de Equipos y Participantes -->
         <section id="teams-view" class="view">
-            <header>
-                <h1 class="champions-title">EQUIPOS Y PARTICIPANTES</h1>
-                <p>Historial de todos los participantes registrados en Torneos FC</p>
+            <header class="view-header-with-back">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
+                <div class="header-titles">
+                    <h1 class="champions-title">EQUIPOS Y PARTICIPANTES</h1>
+                    <p>Historial de todos los participantes registrados en Torneos FC</p>
+                </div>
             </header>
 
             <div class="teams-controls-bar">
@@ -484,9 +493,12 @@
 
         <!-- Vista de Ranking y Campeones -->
         <section id="stats-view" class="view">
-            <header>
-                <h1 class="champions-title">RANKING DE CAMPEONES</h1>
-                <p>Jugadores que han alcanzado la gloria en Torneos FC</p>
+            <header class="view-header-with-back">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
+                <div class="header-titles">
+                    <h1 class="champions-title">RANKING DE CAMPEONES</h1>
+                    <p>Jugadores que han alcanzado la gloria en Torneos FC</p>
+                </div>
             </header>
             
             <div class="ranking-tabs-container">
@@ -503,9 +515,12 @@
 
         <!-- Vista de Configuración Global -->
         <section id="config-view" class="view">
-            <header>
-                <h1 class="champions-title">CONFIGURACIÓN GLOBAL</h1>
-                <p>Personaliza tu experiencia, reglas de juego y gestión de datos</p>
+            <header class="view-header-with-back">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
+                <div class="header-titles">
+                    <h1 class="champions-title">CONFIGURACIÓN GLOBAL</h1>
+                    <p>Personaliza tu experiencia, reglas de juego y gestión de datos</p>
+                </div>
             </header>
 
             <div class="config-sections-container">
@@ -627,9 +642,12 @@
 
         <!-- Vista de Torneos Guardados -->
         <section id="saved-view" class="view">
-            <header>
-                <h1 class="champions-title">GUARDADOS</h1>
-                <p>Tus torneos anteriores</p>
+            <header class="view-header-with-back">
+                <button type="button" class="btn-header-back" title="Volver atrás">⬅ Volver</button>
+                <div class="header-titles">
+                    <h1 class="champions-title">GUARDADOS</h1>
+                    <p>Tus torneos anteriores</p>
+                </div>
             </header>
             
             <!-- Buscador y Filtros -->
@@ -768,6 +786,6 @@
         }
     </script>
 
-    <script src="app.js?v=26"></script>
+    <script src="app.js?v=27"></script>
 </body>
 </html>

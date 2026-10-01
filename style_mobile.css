@@ -282,30 +282,74 @@ button {
 /* Global Back Button */
 .global-back-btn {
     position: fixed;
-    top: 2rem;
-    left: 2rem;
-    background: rgba(20, 30, 60, 0.6);
-    border: 1px solid var(--border-color);
-    color: var(--accent-silver);
-    width: 50px;
-    height: 50px;
+    top: 1.5rem;
+    left: 1.5rem;
+    background: rgba(7, 13, 30, 0.85);
+    border: 2px solid #00F0FF;
+    color: #00F0FF;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 1000;
-    transition: all 0.3s ease;
+    z-index: 10000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.35), 0 4px 15px rgba(0, 0, 0, 0.6);
     padding: 0;
 }
 .global-back-btn:hover {
-    background: rgba(0, 112, 243, 0.2);
-    border-color: var(--primary-color);
-    color: white;
-    transform: translateX(-5px) scale(1.05);
+    background: #00F0FF;
+    color: #050B14;
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.85);
+    transform: translateX(-3px) scale(1.08);
 }
+.global-back-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Header Back Button & Container */
+.view-header-with-back {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+.view-header-with-back .header-titles {
+    text-align: center;
+}
+
+.btn-header-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    background: rgba(0, 240, 255, 0.12);
+    border: 1px solid rgba(0, 240, 255, 0.5);
+    color: #00F0FF;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+    user-select: none;
+}
+.btn-header-back:hover {
+    background: #00F0FF;
+    color: #050B14;
+    border-color: #00F0FF;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.6);
+    transform: translateX(-4px);
+}
+
 
 /* Hamburger Menu */
 .hamburger-menu {
@@ -2347,6 +2391,10 @@ body.theme-champions #bracket-view::before {
     .hamburger-menu {
         display: none !important;
     }
+    .global-back-btn {
+        top: 1.5rem;
+        left: calc(230px + 1.5rem);
+    }
 }
 
 @media (max-width: 991px) {
@@ -2358,6 +2406,12 @@ body.theme-champions #bracket-view::before {
     }
     .hero-middle-grid, .hero-bottom-features {
         grid-template-columns: 1fr;
+    }
+    .global-back-btn {
+        top: 1rem;
+        left: 1rem;
+        width: 44px;
+        height: 44px;
     }
 }
 

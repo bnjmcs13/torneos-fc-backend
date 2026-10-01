@@ -673,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    btnGlobalBack.addEventListener('click', () => {
+    window.goBack = function() {
         const currentView = document.querySelector('.view.active');
         while (viewHistory.length > 0 && viewHistory[viewHistory.length - 1] === currentView) {
             viewHistory.pop();
@@ -685,6 +685,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             showView(homeView, false);
         }
+    };
+
+    if (btnGlobalBack) {
+        btnGlobalBack.addEventListener('click', window.goBack);
+    }
+
+    document.querySelectorAll('.btn-header-back').forEach(btn => {
+        btn.addEventListener('click', window.goBack);
     });
 
     const allThemeClasses = ['theme-champions', 'theme-copa', 'theme-brasileirao', 'theme-premier', 'theme-laliga', 'theme-seriea', 'theme-bundesliga', 'theme-ligue1', 'theme-argentina', 'theme-mls', 'theme-eredivisie', 'theme-primeira', 'theme-chile'];
