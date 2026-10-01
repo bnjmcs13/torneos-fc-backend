@@ -1,9 +1,9 @@
-const CACHE_NAME = 'torneos-fc-cache-v17';
+const CACHE_NAME = 'torneos-fc-cache-v18';
 const urlsToCache = [
   './',
   './index.html',
-  './style_mobile.css?v=12',
-  './app.js?v=12',
+  './style_mobile.css?v=13',
+  './app.js?v=13',
   './manifest.json',
   './icon.png'
 ];
