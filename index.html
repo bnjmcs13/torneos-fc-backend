@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=24">
+    <link rel="stylesheet" href="style_mobile.css?v=25">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -206,127 +206,198 @@
             
         </section>
 
-        <!-- Vista de Configuración -->
+        <!-- Vista de Configuración (Diseño Grid Modular 2x2) -->
         <section id="setup-view" class="view">
             <div class="navbar-header">
                 <div class="nav-titles">
-                    <h1 class="champions-title compact">TORNEOS FC</h1>
-                    <p>Configuración</p>
+                    <h1 class="champions-title compact" id="setup-main-title">TORNEOS FC</h1>
+                    <p id="setup-sub-title">Configuración del Torneo</p>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="input-group">
-                    <label for="tournament-name">Nombre del Torneo (Opcional):</label>
-                    <input type="text" id="tournament-name" placeholder="Ej. Copa de Verano 2026" />
-                </div>
-                <div class="input-group">
-                    <label for="num-players">Cantidad de Participantes (2 - 32):</label>
-                    <input type="number" id="num-players" min="2" max="128" value="16" />
-                </div>
-                
-                <!-- Configuración Manual Champions -->
-                <div id="custom-champions-config" class="hidden" style="margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                    <h4 style="margin-top:0; margin-bottom:1rem; color: var(--accent-silver); text-align: center;">Configuración de Grupos y Clasificación</h4>
-                    <div id="manual-rules-panel" class="manual-rules-panel">
+            <div class="setup-grid-container">
+                <!-- Tarjeta 1: CONFIGURACIÓN BÁSICA (Arriba Izquierda) -->
+                <div class="setup-card">
+                    <div class="setup-card-header">
+                        <h3>CONFIGURACIÓN BÁSICA</h3>
+                    </div>
+                    <div class="setup-card-body">
                         <div class="input-group">
-                            <label for="custom-groups">Total de Grupos:</label>
-                            <input type="number" id="custom-groups" min="1" max="32" value="4" />
-                        </div>
-                        <div class="input-group">
-                            <label for="custom-direct">Clasificados Directos por Grupo:</label>
-                            <input type="number" id="custom-direct" min="1" max="16" value="2" />
-                            <small class="helper-text">Ej: Si pones 2, pasan el 1ro y 2do de cada grupo.</small>
-                        </div>
-                        <div class="input-group">
-                            <label for="custom-wildcards">Cupos Comodín (Mejores Siguientes): <button type="button" class="btn-info-icon" data-info="wildcards" title="Ver explicación">ℹ️</button></label>
-                            <input type="number" id="custom-wildcards" min="0" max="32" value="0" />
-                            <small class="helper-text">Ej: Los 2 mejores terceros.</small>
+                            <label for="tournament-name">Nombre del Torneo (Opcional):</label>
+                            <input type="text" id="tournament-name" placeholder="Ej. Copa de Verano 2026" />
                         </div>
                         <div class="input-group" style="margin-top: 1rem;">
-                            <label for="champions-type-select">Formato de las Llaves: <button type="button" class="btn-info-icon" data-info="bracket-type" title="Ver explicación">ℹ️</button></label>
-                            <select id="champions-type-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                                <option value="direct" selected>Eliminación Directa Estándar</option>
-                                <option value="advantage">Winner + Loser Bracket (con ventaja al 1°)</option>
-                            </select>
-                            <div id="champions-type-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
+                            <label for="num-players">Cantidad de Participantes (2 - 32):</label>
+                            <div class="stepper-controls-wrapper">
+                                <button type="button" id="btn-stepper-sub-fast" class="btn-stepper">-</button>
+                                <button type="button" id="btn-stepper-sub" class="btn-stepper">-</button>
+                                <input type="number" id="num-players" min="2" max="128" value="16" class="stepper-value-input" />
+                                <button type="button" id="btn-stepper-add" class="btn-stepper">+</button>
+                                <button type="button" id="btn-stepper-add-fast" class="btn-stepper">+</button>
+                            </div>
                         </div>
-                        
-                        <div id="custom-valid-banner" class="custom-valid-banner valid">
-                            Total Clasificados a Eliminatoria: <strong id="custom-total-target">8</strong>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: FORMATO DEL TORNEO (Arriba Derecha) -->
+                <div class="setup-card">
+                    <div class="setup-card-header">
+                        <h3 id="setup-format-card-title">FORMATO DE LIGA</h3>
+                    </div>
+                    <div class="setup-card-body">
+                        <!-- Configuración Modo Liga -->
+                        <div id="league-config" class="hidden">
+                            <div class="input-group">
+                                <label for="league-schedule-select">Formato de Partidos (Fase de Liga): <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
+                                <select id="league-schedule-select" class="form-select">
+                                    <option value="single">Partido Único (Solo Ida)</option>
+                                    <option value="double" selected>Ida y Vuelta</option>
+                                </select>
+                            </div>
+                            <div id="league-schedule-info-banner" class="setup-info-banner">
+                                Ida y Vuelta (Goles Acumulados): 2 partidos contra cada rival de la liga (Local y Visitante).
+                            </div>
+                            <div class="input-group" style="margin-top: 1rem;">
+                                <label for="league-theme-select">Selección de Liga (Temática): <button type="button" class="btn-info-icon" data-info="league-theme" title="Ver explicación">ℹ️</button></label>
+                                <select id="league-theme-select" class="form-select">
+                                    <option value="brasileirao">Brasileirão (Brasil)</option>
+                                    <option value="premier">Premier League (Inglaterra)</option>
+                                    <option value="laliga">La Liga (España)</option>
+                                    <option value="seriea">Serie A (Italia)</option>
+                                    <option value="bundesliga">Bundesliga (Alemania)</option>
+                                    <option value="ligue1">Ligue 1 (Francia)</option>
+                                    <option value="argentina">Liga Profesional (Argentina)</option>
+                                    <option value="chile">Primera División (Chile)</option>
+                                    <option value="mls">MLS (EEUU)</option>
+                                    <option value="eredivisie">Eredivisie (Países Bajos)</option>
+                                    <option value="primeira">Primeira Liga (Portugal)</option>
+                                </select>
+                            </div>
                         </div>
-                        <small id="custom-error-text" class="error-text hidden" style="color: #ff4d4d; display: block; margin-top: 0.5rem; text-align: center;">⚠️ El total de clasificados debe ser una potencia de 2 (2, 4, 8, 16 o 32) para las llaves eliminatorias.</small>
+
+                        <!-- Configuración Manual Champions -->
+                        <div id="custom-champions-config" class="hidden">
+                            <div id="manual-rules-panel">
+                                <div class="input-group-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                                    <div class="input-group">
+                                        <label for="custom-groups">Total Grupos:</label>
+                                        <input type="number" id="custom-groups" min="1" max="32" value="4" />
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="custom-direct">Directos p/Grupo:</label>
+                                        <input type="number" id="custom-direct" min="1" max="16" value="2" />
+                                    </div>
+                                </div>
+                                <div class="input-group" style="margin-top: 0.8rem;">
+                                    <label for="custom-wildcards">Cupos Comodín: <button type="button" class="btn-info-icon" data-info="wildcards" title="Ver explicación">ℹ️</button></label>
+                                    <input type="number" id="custom-wildcards" min="0" max="32" value="0" />
+                                </div>
+                                <div id="custom-valid-banner" class="custom-valid-banner valid" style="margin-top: 0.8rem;">
+                                    Total Clasificados: <strong id="custom-total-target">8</strong>
+                                </div>
+                                <small id="custom-error-text" class="error-text hidden" style="color: #ff4d4d; display: block; margin-top: 0.5rem; text-align: center;">⚠️ Debe ser potencia de 2 (2, 4, 8, 16, 32).</small>
+                            </div>
+                        </div>
+
+                        <!-- Configuración Modo Copa -->
+                        <div id="copa-config" class="hidden">
+                            <div class="input-group">
+                                <label for="copa-schedule-select">Modalidad de Partidos: <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
+                                <select id="copa-schedule-select" class="form-select">
+                                    <option value="single" selected>Partido Único</option>
+                                    <option value="double">Ida y Vuelta (Goles Acumulados)</option>
+                                    <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
+                                </select>
+                            </div>
+                            <div id="copa-schedule-info-banner" class="setup-info-banner">
+                                Partido Único: 1 solo enfrentamiento directo por serie. En caso de empate se define por penales.
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Configuración Modo Copa -->
-                <div id="copa-config" class="hidden" style="margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                    <div class="input-group">
-                        <label>Modalidad de Partidos: <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
-                        <select id="copa-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                            <option value="single" selected>Partido Único</option>
-                            <option value="double">Ida y Vuelta (Goles Acumulados)</option>
-                            <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
-                        </select>
-                        <div id="copa-schedule-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
+
+                <!-- Tarjeta 3: REGLAS Y DESEMPATE (Abajo Izquierda) -->
+                <div class="setup-card">
+                    <div class="setup-card-header">
+                        <h3>REGLAS Y DESEMPATE</h3>
                     </div>
-                    <small class="helper-text" style="color: #00F0FF; display: block; margin-top: 0.5rem;">Copa Pura: Torneo de eliminación directa. Elige 2, 4, 8, 16 o 32 equipos.</small>
+                    <div class="setup-card-body">
+                        <!-- Reglas Liga -->
+                        <div id="league-rules-box" class="rules-box">
+                            <div class="input-group">
+                                <label for="league-tiebreak-select">Primer Criterio de Desempate: <button type="button" class="btn-info-icon" data-info="tiebreak" title="Ver explicación">ℹ️</button></label>
+                                <select id="league-tiebreak-select" class="form-select">
+                                    <option value="dg" selected>Diferencia de Goles (DG)</option>
+                                    <option value="gf">Goles a Favor (GF)</option>
+                                    <option value="direct">Resultado Directo</option>
+                                </select>
+                            </div>
+                            <div class="input-group" style="margin-top: 1rem;">
+                                <label for="league-playoffs-select">¿Jugar Playoffs al finalizar?: <button type="button" class="btn-info-icon" data-info="bracket-type" title="Ver explicación">ℹ️</button></label>
+                                <select id="league-playoffs-select" class="form-select">
+                                    <option value="none" selected>No, solo fase de Liga</option>
+                                    <option value="direct">Sí, Eliminación Directa Estándar</option>
+                                    <option value="advantage">Sí, Winner + Loser Bracket (con ventaja al 1°)</option>
+                                </select>
+                            </div>
+                            <div id="league-playoffs-qty-container" class="input-group hidden" style="margin-top: 1rem;">
+                                <label for="league-playoffs-qty-select">Clasificados a Playoffs:</label>
+                                <select id="league-playoffs-qty-select" class="form-select"></select>
+                            </div>
+                            <div id="league-playoffs-info-banner" class="setup-info-banner" style="margin-top: 0.8rem;">
+                                📊 Sin Playoffs: El Campeón será directamente quien quede en 1° lugar en la tabla.
+                            </div>
+                        </div>
+
+                        <!-- Reglas Champions -->
+                        <div id="champions-rules-box" class="rules-box hidden">
+                            <div class="input-group">
+                                <label for="champions-type-select">Formato de las Llaves: <button type="button" class="btn-info-icon" data-info="bracket-type" title="Ver explicación">ℹ️</button></label>
+                                <select id="champions-type-select" class="form-select">
+                                    <option value="direct" selected>Eliminación Directa Estándar</option>
+                                    <option value="advantage">Winner + Loser Bracket (con ventaja al 1°)</option>
+                                </select>
+                            </div>
+                            <div id="champions-type-info-banner" class="setup-info-banner" style="margin-top: 0.8rem;">
+                                ⚔️ Eliminación Directa Estándar: El 1° enfrente al último clasificado.
+                            </div>
+                        </div>
+
+                        <!-- Reglas Copa -->
+                        <div id="copa-rules-box" class="rules-box hidden">
+                            <div class="input-group">
+                                <label for="copa-type-select">Formato de las Llaves: <button type="button" class="btn-info-icon" data-info="bracket-type" title="Ver explicación">ℹ️</button></label>
+                                <select id="copa-type-select" class="form-select">
+                                    <option value="direct" selected>Eliminación Directa Estándar</option>
+                                    <option value="advantage">Winner + Loser Bracket (con ventaja al 1°)</option>
+                                </select>
+                            </div>
+                            <div id="copa-rules-info-banner" class="setup-info-banner" style="margin-top: 0.8rem;">
+                                ⚔️ Copa Pura: Torneo de eliminación directa sin fase de grupos.
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Configuración Modo Liga -->
-                <div id="league-config" class="hidden" style="margin-bottom: 2rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                    <div class="input-group">
-                        <label for="league-schedule-select">Formato de Partidos (Fase de Liga): <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
-                        <select id="league-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                            <option value="single">Partido Único (Solo Ida)</option>
-                            <option value="double" selected>Ida y Vuelta</option>
-                        </select>
-                        <div id="league-schedule-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
+
+                <!-- Tarjeta 4: PARTICIPANTES (Abajo Derecha) -->
+                <div class="setup-card">
+                    <div class="setup-card-header">
+                        <h3>PARTICIPANTES</h3>
                     </div>
-                    <div class="input-group" style="margin-top: 1rem;">
-                        <label for="league-tiebreak-select">Primer Criterio de Desempate en Tabla: <button type="button" class="btn-info-icon" data-info="tiebreak" title="Ver explicación">ℹ️</button></label>
-                        <select id="league-tiebreak-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                            <option value="dg" selected>Diferencia de Goles (DG)</option>
-                            <option value="gf">Goles a Favor (GF)</option>
-                            <option value="direct">Resultado Directo</option>
-                        </select>
-                    </div>
-                    <div class="input-group" style="margin-top: 1rem;">
-                        <label>Selección de Liga (Temática):</label>
-                        <select id="league-theme-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                            <option value="brasileirao">Brasileirão (Brasil)</option>
-                            <option value="premier">Premier League (Inglaterra)</option>
-                            <option value="laliga">La Liga (España)</option>
-                            <option value="seriea">Serie A (Italia)</option>
-                            <option value="bundesliga">Bundesliga (Alemania)</option>
-                            <option value="ligue1">Ligue 1 (Francia)</option>
-                            <option value="argentina">Liga Profesional (Argentina)</option>
-                            <option value="chile">Primera División (Chile)</option>
-                            <option value="mls">MLS (EEUU)</option>
-                            <option value="eredivisie">Eredivisie (Países Bajos)</option>
-                            <option value="primeira">Primeira Liga (Portugal)</option>
-                        </select>
-                    </div>
-                    <div class="input-group" style="margin-top: 1rem;">
-                        <label for="league-playoffs-select">¿Jugar Playoffs al finalizar la liga?: <button type="button" class="btn-info-icon" data-info="bracket-type" title="Ver explicación">ℹ️</button></label>
-                        <select id="league-playoffs-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
-                            <option value="none" selected>No, solo fase de Liga</option>
-                            <option value="direct">Sí, Eliminación Directa Estándar</option>
-                            <option value="advantage">Sí, Winner + Loser Bracket (con ventaja al 1°)</option>
-                        </select>
-                        <div id="league-playoffs-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
-                    </div>
-                    <div id="league-playoffs-qty-container" class="input-group hidden" style="margin-top: 1rem;">
-                        <label for="league-playoffs-qty-select">Cantidad de Clasificados a Playoffs:</label>
-                        <select id="league-playoffs-qty-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);"></select>
+                    <div class="setup-card-body">
+                        <div class="setup-search-wrapper">
+                            <input type="text" id="setup-players-search" placeholder="🔍 Buscar equipo..." />
+                        </div>
+                        <div id="players-list" class="players-list-grid">
+                            <!-- Inputs de jugadores generados dinámicamente -->
+                        </div>
                     </div>
                 </div>
-                
-                <div id="players-list" class="players-list">
-                    <!-- Inputs de jugadores generados dinámicamente -->
-                </div>
-                
-                <button id="btn-generate" class="btn-primary">Generar Torneo</button>
+            </div>
+
+            <!-- Botón Inferior Centrado -->
+            <div class="setup-bottom-action">
+                <button id="btn-generate" class="btn-generate-modular">GENERAR TORNEO</button>
             </div>
         </section>
 
@@ -697,6 +768,6 @@
         }
     </script>
 
-    <script src="app.js?v=24"></script>
+    <script src="app.js?v=25"></script>
 </body>
 </html>

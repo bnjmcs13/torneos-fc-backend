@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Setup
     function renderPlayerInputs() {
         let count = parseInt(numPlayersInput.value);
-        if (count < 2) count = 2;
+        if (isNaN(count) || count < 2) count = 2;
         if (count > 32) count = 32;
         numPlayersInput.value = count;
 
@@ -85,12 +85,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentVals = Array.from(currentInputs).map(i => i.value);
 
         playersList.innerHTML = '';
+        const shields = ['🛡️', '⚽', '🏆', '⭐', '⚔️', '🔥', '👑', '💎', '🚀', '🦁', '🦅', '🐯', '🐺', '⚡', '🔴', '🔵', '🟢', '🟡'];
         for (let i = 0; i < count; i++) {
+            const card = document.createElement('div');
+            card.className = 'player-pill-card';
+
+            const shield = document.createElement('span');
+            shield.className = 'player-pill-shield';
+            shield.textContent = shields[i % shields.length];
+
             const input = document.createElement('input');
             input.type = 'text';
+            input.className = 'player-pill-input';
             input.placeholder = `Participante ${i + 1}`;
             input.value = currentVals[i] || '';
-            playersList.appendChild(input);
+
+            card.appendChild(shield);
+            card.appendChild(input);
+            playersList.appendChild(card);
         }
         
         // Auto-update custom champions config based on player count
@@ -125,6 +137,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     numPlayersInput.addEventListener('input', renderPlayerInputs);
     renderPlayerInputs();
+
+    // Stepper controls (+ / -) for player count
+    const btnStepperSubFast = document.getElementById('btn-stepper-sub-fast');
+    const btnStepperSub = document.getElementById('btn-stepper-sub');
+    const btnStepperAdd = document.getElementById('btn-stepper-add');
+    const btnStepperAddFast = document.getElementById('btn-stepper-add-fast');
+
+    function changePlayerCount(delta) {
+        let current = parseInt(numPlayersInput.value) || 16;
+        current = Math.max(2, Math.min(32, current + delta));
+        numPlayersInput.value = current;
+        renderPlayerInputs();
+    }
+
+    if (btnStepperSubFast) btnStepperSubFast.addEventListener('click', () => changePlayerCount(-4));
+    if (btnStepperSub) btnStepperSub.addEventListener('click', () => changePlayerCount(-1));
+    if (btnStepperAdd) btnStepperAdd.addEventListener('click', () => changePlayerCount(1));
+    if (btnStepperAddFast) btnStepperAddFast.addEventListener('click', () => changePlayerCount(4));
+
+    // Live search filter in setup view
+    const setupPlayersSearch = document.getElementById('setup-players-search');
+    if (setupPlayersSearch) {
+        setupPlayersSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const cards = playersList.querySelectorAll('.player-pill-card');
+            cards.forEach(card => {
+                const input = card.querySelector('input');
+                const text = (input ? input.value : '') || input.placeholder;
+                if (!query || text.toLowerCase().includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Helper to sync modular grid 2x2 setup view cards based on format
+    window.updateSetupViewLayout = function() {
+        const formatTitle = document.getElementById('setup-format-card-title');
+        const customChampionsConfig = document.getElementById('custom-champions-config');
+        const leagueConfig = document.getElementById('league-config');
+        const copaConfig = document.getElementById('copa-config');
+
+        const championsRulesBox = document.getElementById('champions-rules-box');
+        const leagueRulesBox = document.getElementById('league-rules-box');
+        const copaRulesBox = document.getElementById('copa-rules-box');
+
+        if (state.format === 'champions') {
+            if (formatTitle) formatTitle.textContent = 'FORMATO DE CHAMPIONS';
+            if (customChampionsConfig) customChampionsConfig.classList.remove('hidden');
+            if (leagueConfig) leagueConfig.classList.add('hidden');
+            if (copaConfig) copaConfig.classList.add('hidden');
+
+            if (championsRulesBox) championsRulesBox.classList.remove('hidden');
+            if (leagueRulesBox) leagueRulesBox.classList.add('hidden');
+            if (copaRulesBox) copaRulesBox.classList.add('hidden');
+        } else if (state.format === 'liga') {
+            if (formatTitle) formatTitle.textContent = 'FORMATO DE LIGA';
+            if (leagueConfig) leagueConfig.classList.remove('hidden');
+            if (customChampionsConfig) customChampionsConfig.classList.add('hidden');
+            if (copaConfig) copaConfig.classList.add('hidden');
+
+            if (leagueRulesBox) leagueRulesBox.classList.remove('hidden');
+            if (championsRulesBox) championsRulesBox.classList.add('hidden');
+            if (copaRulesBox) copaRulesBox.classList.add('hidden');
+            if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
+        } else if (state.format === 'copa') {
+            if (formatTitle) formatTitle.textContent = 'FORMATO DE COPA';
+            if (copaConfig) copaConfig.classList.remove('hidden');
+            if (customChampionsConfig) customChampionsConfig.classList.add('hidden');
+            if (leagueConfig) leagueConfig.classList.add('hidden');
+
+            if (copaRulesBox) copaRulesBox.classList.remove('hidden');
+            if (championsRulesBox) championsRulesBox.classList.add('hidden');
+            if (leagueRulesBox) leagueRulesBox.classList.add('hidden');
+        }
+    };
 
     // Auto-import via hash fragment for double-click self-extracting files
     function checkHashImport() {
@@ -369,18 +459,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const leagueThemeSelect = document.getElementById('league-theme-select');
         if (leagueThemeSelect) leagueThemeSelect.value = 'brasileirao';
         
-        // Hide/show correct menu configs based on default format 'champions'
-        const headerTitle = setupView.querySelector('.champions-title');
-        if (headerTitle) headerTitle.textContent = 'CHAMPIONS LEAGUE';
-        
-        const customChampionsConfig = document.getElementById('custom-champions-config');
-        if (customChampionsConfig) customChampionsConfig.classList.remove('hidden');
-        
-        const leagueConfig = document.getElementById('league-config');
-        if (leagueConfig) leagueConfig.classList.add('hidden');
-        
-        const copaConfig = document.getElementById('copa-config');
-        if (copaConfig) copaConfig.classList.add('hidden');
+        if (typeof window.updateSetupViewLayout === 'function') {
+            window.updateSetupViewLayout();
+        }
         
         // Clear manual validation banner
         isManualConfigValid = true;
@@ -614,36 +695,17 @@ document.addEventListener('DOMContentLoaded', () => {
     formatCards.forEach(card => {
         card.addEventListener('click', () => {
             state.format = card.getAttribute('data-format');
-            
-            // Update Title dynamically
-            const headerTitle = setupView.querySelector('.champions-title');
-            const leagueConfig = document.getElementById('league-config');
-            const copaConfig = document.getElementById('copa-config');
             const numPlayersInput = document.getElementById('num-players');
             
-            if (state.format === 'champions') {
-                headerTitle.textContent = 'CHAMPIONS LEAGUE';
-                if (typeof customChampionsConfig !== 'undefined' && customChampionsConfig) customChampionsConfig.classList.remove('hidden');
-                if (leagueConfig) leagueConfig.classList.add('hidden');
-                if (copaConfig) copaConfig.classList.add('hidden');
-            }
-            else if (state.format === 'liga') {
-                headerTitle.textContent = 'MODO LIGA';
-                if (typeof customChampionsConfig !== 'undefined' && customChampionsConfig) customChampionsConfig.classList.add('hidden');
-                if (leagueConfig) leagueConfig.classList.remove('hidden');
-                if (copaConfig) copaConfig.classList.add('hidden');
-                if (typeof updateLeaguePlayoffsQtySelect === 'function') updateLeaguePlayoffsQtySelect();
-            }
-            else if (state.format === 'copa') {
-                headerTitle.textContent = 'COPA';
-                if (typeof customChampionsConfig !== 'undefined' && customChampionsConfig) customChampionsConfig.classList.add('hidden');
-                if (leagueConfig) leagueConfig.classList.add('hidden');
-                if (copaConfig) copaConfig.classList.remove('hidden');
-                
-                // Set default to optimal logic (e.g. 16 instead of odd numbers)
-                if(numPlayersInput && ![2,4,8,16,32].includes(parseInt(numPlayersInput.value))) {
+            if (state.format === 'copa') {
+                if (numPlayersInput && ![2,4,8,16,32].includes(parseInt(numPlayersInput.value))) {
                     numPlayersInput.value = 16;
+                    renderPlayerInputs();
                 }
+            }
+
+            if (typeof window.updateSetupViewLayout === 'function') {
+                window.updateSetupViewLayout();
             }
             
             window.updateAppTheme();
