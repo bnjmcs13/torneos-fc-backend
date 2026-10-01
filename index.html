@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=21">
+    <link rel="stylesheet" href="style_mobile.css?v=22">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -384,20 +384,41 @@
             </div>
         </section>
 
-        <!-- Vista de Estadisticas -->
-        <section id="stats-view" class="view">
-            <div class="navbar-header">
-                <div class="nav-titles">
-                    <h1 class="champions-title compact">ESTADÍSTICAS</h1>
-                    <p>Cuadro de Honor</p>
+        <!-- Vista de Equipos y Participantes -->
+        <section id="teams-view" class="view">
+            <header>
+                <h1 class="champions-title">EQUIPOS Y PARTICIPANTES</h1>
+                <p>Historial de todos los participantes registrados en Torneos FC</p>
+            </header>
+
+            <div class="teams-controls-bar">
+                <div class="search-box-wrapper" style="position:relative; flex: 1; max-width: 500px;">
+                    <input type="text" id="teams-search-input" placeholder="🔍 Buscar participante por nombre..." style="width:100%; padding:0.8rem 1rem; background:rgba(0,0,0,0.4); border:1px solid rgba(0,240,255,0.25); border-radius:12px; color:#fff; font-size:0.95rem; outline:none;" />
                 </div>
-                <div class="view-controls">
-                    <button id="btn-stats-back" class="btn-secondary">Volver Atrás</button>
-                </div>
+                <div id="teams-count-badge" class="badge-count" style="background:rgba(0,240,255,0.15); border:1px solid #00F0FF; color:#00F0FF; padding:0.6rem 1.2rem; border-radius:20px; font-weight:800; font-size:0.9rem;">0 Registrados</div>
             </div>
+
+            <div id="teams-grid-container" class="teams-cards-grid">
+                <!-- Se inyecta dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Vista de Ranking y Campeones -->
+        <section id="stats-view" class="view">
+            <header>
+                <h1 class="champions-title">RANKING DE CAMPEONES</h1>
+                <p>Jugadores que han alcanzado la gloria en Torneos FC</p>
+            </header>
             
-            <div id="stats-container" class="groups-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); padding-top: 2rem;">
-                <!-- Tarjetas estéticas inyectadas dinámicamente -->
+            <div class="ranking-tabs-container">
+                <button class="ranking-tab-btn active" data-format="all">🏆 Ranking General</button>
+                <button class="ranking-tab-btn" data-format="champions">⭐ Champions League</button>
+                <button class="ranking-tab-btn" data-format="liga">🏆 Modo Liga</button>
+                <button class="ranking-tab-btn" data-format="copa">⚔️ Copas y Llaves</button>
+            </div>
+
+            <div id="ranking-container">
+                <!-- Podio y Tabla Inyectados Dinámicamente -->
             </div>
         </section>
 
@@ -544,6 +565,6 @@
         }
     </script>
 
-    <script src="app.js?v=21"></script>
+    <script src="app.js?v=22"></script>
 </body>
 </html>

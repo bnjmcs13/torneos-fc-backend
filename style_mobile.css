@@ -2361,5 +2361,239 @@ body.theme-champions #bracket-view::before {
     }
 }
 
+/* ==========================================================================
+   EQUIPOS Y RANKING DE CAMPEONES
+   ========================================================================== */
+
+/* Teams View Styles */
+.teams-controls-bar {
+    max-width: 900px;
+    margin: 0 auto 2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.teams-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.team-participant-card {
+    background: rgba(11, 23, 48, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.team-participant-card:hover {
+    border-color: #00F0FF;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 240, 255, 0.25);
+}
+
+.card-header-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.participant-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00F0FF, #0070F3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+    flex-shrink: 0;
+}
+
+.participant-info-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    text-align: left;
+}
+
+.participant-name-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.participant-badge-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    color: #FFD700;
+    display: inline-block;
+    width: fit-content;
+}
+
+.card-stats-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+}
+
+.stat-item-cell {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.stat-item-label {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+.stat-item-val {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Ranking Tabs */
+.ranking-tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.ranking-tab-btn {
+    background: rgba(11, 23, 48, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 0.6rem 1.4rem;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ranking-tab-btn:hover {
+    color: #ffffff;
+    border-color: rgba(0, 240, 255, 0.3);
+}
+
+.ranking-tab-btn.active {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 112, 243, 0.2));
+    border-color: #00F0FF;
+    color: #00F0FF;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+/* Ranking Table & Podium */
+.ranking-podium-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.podium-card {
+    background: rgba(11, 23, 48, 0.85);
+    border-radius: 18px;
+    padding: 1.5rem 1.2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 170px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.podium-card.gold {
+    border: 2px solid #FFD700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+    transform: scale(1.08);
+}
+
+.podium-card.silver {
+    border: 2px solid #c0c0c0;
+    box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
+}
+
+.podium-card.bronze {
+    border: 2px solid #cd7f32;
+    box-shadow: 0 0 20px rgba(205, 127, 50, 0.3);
+}
+
+.podium-badge {
+    font-size: 2.2rem;
+}
+
+.podium-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.podium-titles {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #00F0FF;
+}
+
+.ranking-table-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: rgba(11, 23, 48, 0.75);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.ranking-table th {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 1rem 1.2rem;
+    color: #00F0FF;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ranking-table td {
+    padding: 1rem 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-weight: 600;
+}
+
 
 

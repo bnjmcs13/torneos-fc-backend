@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bracketView = document.getElementById('bracket-view');
     const savedView = document.getElementById('saved-view');
     const statsView = document.getElementById('stats-view');
+    const teamsView = document.getElementById('teams-view');
     
     const btnCreateTournament = document.getElementById('btn-create-tournament');
     const btnHeroSaved = document.getElementById('btn-hero-saved');
@@ -577,8 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (navHome) navHome.addEventListener('click', () => { setActiveNavItem(navHome); viewHistory.length = 0; showView(homeView, false); });
     if (navSaved) navSaved.addEventListener('click', () => { setActiveNavItem(navSaved); renderSavedTournaments(); showView(savedView, true); });
-    if (navTeams) navTeams.addEventListener('click', () => { setActiveNavItem(navTeams); showView(setupView, true); });
-    if (navRanking) navRanking.addEventListener('click', () => { setActiveNavItem(navRanking); calculateAndDrawStats(); showView(statsView, true); });
+    if (navTeams) navTeams.addEventListener('click', () => { setActiveNavItem(navTeams); renderTeamsView(); showView(teamsView, true); });
+    if (navRanking) navRanking.addEventListener('click', () => { setActiveNavItem(navRanking); renderRankingView('all'); showView(statsView, true); });
     if (navConfig) navConfig.addEventListener('click', () => { setActiveNavItem(navConfig); showView(setupView, true); });
     if (navSupport) navSupport.addEventListener('click', () => { openInfoModal('champions-format'); });
 
@@ -2701,6 +2702,276 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+
+    // ==========================================
+    // EQUIPOS Y REGISTRO DE PARTICIPANTES GLOBAL
+    // ==========================================
+    function getGlobalParticipantsData() {
+        let storedTournaments = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
+        let customList = JSON.parse(localStorage.getItem('torneos-fc-participants-list') || '[]');
+        
+        const participantsMap = {};
+
+        const initP = (name) => {
+            if (!name || typeof name !== 'string') return null;
+            const clean = name.trim();
+            if (!clean) return null;
+            const key = clean.toLowerCase();
+            if (!participantsMap[key]) {
+                participantsMap[key] = {
+                    name: clean,
+                    playedCount: 0,
+                    titlesTotal: 0,
+                    titlesByFormat: { champions: 0, liga: 0, copa: 0 },
+                    formats: new Set()
+                };
+            }
+            return key;
+        };
+
+        // Add custom list
+        customList.forEach(name => initP(name));
+
+        // Add active state participants
+        if (state && state.participants && Array.isArray(state.participants)) {
+            state.participants.forEach(p => {
+                const k = initP(p);
+                if (k && state.format) participantsMap[k].formats.add(state.format);
+            });
+        }
+
+        // Process all saved tournaments
+        storedTournaments.forEach(t => {
+            const format = t.format || 'champions';
+            if (t.participants && Array.isArray(t.participants)) {
+                t.participants.forEach(p => {
+                    const k = initP(p);
+                    if (k) {
+                        participantsMap[k].playedCount++;
+                        participantsMap[k].formats.add(format);
+                    }
+                });
+            }
+
+            // Determine champion if finished
+            let winnerName = null;
+            if (t.winner) {
+                winnerName = typeof t.winner === 'object' ? t.winner.name : t.winner;
+            } else if (t.bracketRounds && t.bracketRounds.length > 0) {
+                const finalRound = t.bracketRounds[t.bracketRounds.length - 1];
+                if (finalRound && finalRound.length === 1) {
+                    const finalMatch = finalRound[0];
+                    const w = checkMatchWinner(finalMatch);
+                    if (w && w !== 'tie') {
+                        winnerName = typeof w === 'object' ? w.name : w;
+                    }
+                }
+            } else if (t.format === 'liga' && t.groups && t.groups[0]) {
+                const table = getGroupTable(t.groups[0]);
+                if (table && table.length > 0 && t.groups[0].matches && t.groups[0].matches.every(m => m.isFinished)) {
+                    winnerName = table[0].name;
+                }
+            }
+
+            if (winnerName && typeof winnerName === 'string') {
+                const k = initP(winnerName);
+                if (k) {
+                    participantsMap[k].titlesTotal++;
+                    if (participantsMap[k].titlesByFormat[format] !== undefined) {
+                        participantsMap[k].titlesByFormat[format]++;
+                    } else {
+                        participantsMap[k].titlesByFormat[format] = 1;
+                    }
+                }
+            }
+        });
+
+        return Object.values(participantsMap);
+    }
+
+    function renderTeamsView() {
+        const grid = document.getElementById('teams-grid-container');
+        const badge = document.getElementById('teams-count-badge');
+        const searchInput = document.getElementById('teams-search-input');
+        if (!grid) return;
+
+        const all = getGlobalParticipantsData();
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const filtered = all.filter(p => p.name.toLowerCase().includes(query));
+
+        if (badge) badge.textContent = `${all.length} Registrado${all.length === 1 ? '' : 's'}`;
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                    <div style="font-size: 3rem; margin-bottom: 0.8rem;">👥</div>
+                    <h3 style="color:#ffffff; margin-bottom: 0.5rem;">No se encontraron participantes</h3>
+                    <p style="font-size: 0.9rem;">${query ? 'No hay ningún jugador que coincida con tu búsqueda.' : 'Crea o carga un torneo para registrar automáticamente a los participantes aquí.'}</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(p => {
+            const formatNames = Array.from(p.formats).map(f => {
+                if (f === 'champions') return 'Champions';
+                if (f === 'liga') return 'Liga';
+                if (f === 'copa') return 'Copa';
+                return f;
+            }).join(', ') || 'General';
+
+            html += `
+                <div class="team-participant-card">
+                    <div class="card-header-row">
+                        <div class="participant-avatar-circle">${p.name.charAt(0).toUpperCase()}</div>
+                        <div class="participant-info-col">
+                            <span class="participant-name-title">${p.name}</span>
+                            ${p.titlesTotal > 0 ? `<span class="participant-badge-tag">👑 ${p.titlesTotal} Título${p.titlesTotal === 1 ? '' : 's'}</span>` : `<span class="participant-badge-tag" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.2); color:#94a3b8;">👤 Jugador</span>`}
+                        </div>
+                    </div>
+                    <div class="card-stats-body">
+                        <div class="stat-item-cell">
+                            <span class="stat-item-label">Torneos Jugados</span>
+                            <span class="stat-item-val">${p.playedCount}</span>
+                        </div>
+                        <div class="stat-item-cell">
+                            <span class="stat-item-label">Títulos</span>
+                            <span class="stat-item-val" style="color:${p.titlesTotal > 0 ? '#FFD700' : '#ffffff'};">${p.titlesTotal}</span>
+                        </div>
+                        <div class="stat-item-cell" style="grid-column: 1 / -1; margin-top: 0.3rem;">
+                            <span class="stat-item-label">Formatos Disputados</span>
+                            <span class="stat-item-val" style="font-size: 0.8rem; color: #00F0FF;">${formatNames}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        grid.innerHTML = html;
+    }
+
+    let currentRankingFormat = 'all';
+
+    function renderRankingView(formatFilter = currentRankingFormat) {
+        currentRankingFormat = formatFilter;
+        const container = document.getElementById('ranking-container');
+        if (!container) return;
+
+        const all = getGlobalParticipantsData();
+
+        // STRICT FILTER: ONLY participants who have WON AT LEAST 1 TITLE!
+        const champions = all.filter(p => {
+            if (formatFilter === 'all') return p.titlesTotal > 0;
+            return (p.titlesByFormat[formatFilter] || 0) > 0;
+        }).map(p => ({
+            name: p.name,
+            titles: formatFilter === 'all' ? p.titlesTotal : (p.titlesByFormat[formatFilter] || 0),
+            titlesTotal: p.titlesTotal,
+            playedCount: p.playedCount,
+            formats: p.formats
+        })).sort((a, b) => b.titles - a.titles || b.playedCount - a.playedCount);
+
+        if (champions.length === 0) {
+            const formatLabel = formatFilter === 'champions' ? 'Champions League' : (formatFilter === 'liga' ? 'Modo Liga' : (formatFilter === 'copa' ? 'Copas y Llaves' : 'ningún formato'));
+            container.innerHTML = `
+                <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+                    <h3 style="color:#ffffff; margin-bottom: 0.5rem; font-size: 1.4rem;">Sin Campeones Registrados</h3>
+                    <p style="font-size: 0.95rem; max-width: 500px; margin: 0 auto;">No hay participantes que hayan ganado un torneo en <strong>${formatLabel}</strong> aún. Solo se muestran los jugadores con títulos ganados.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        // Render Podium for Top 3 Champions
+        const p1 = champions[0];
+        const p2 = champions[1];
+        const p3 = champions[2];
+
+        html += `<div class="ranking-podium-row">`;
+        if (p2) {
+            html += `
+                <div class="podium-card silver">
+                    <div class="podium-badge">🥈</div>
+                    <div class="podium-name">${p2.name}</div>
+                    <div class="podium-titles">${p2.titles} Título${p2.titles === 1 ? '' : 's'}</div>
+                </div>
+            `;
+        }
+        if (p1) {
+            html += `
+                <div class="podium-card gold">
+                    <div class="podium-badge">🥇</div>
+                    <div class="podium-name">${p1.name}</div>
+                    <div class="podium-titles">${p1.titles} Título${p1.titles === 1 ? '' : 's'}</div>
+                </div>
+            `;
+        }
+        if (p3) {
+            html += `
+                <div class="podium-card bronze">
+                    <div class="podium-badge">🥉</div>
+                    <div class="podium-name">${p3.name}</div>
+                    <div class="podium-titles">${p3.titles} Título${p3.titles === 1 ? '' : 's'}</div>
+                </div>
+            `;
+        }
+        html += `</div>`;
+
+        // Render Leaderboard Table
+        html += `
+            <div class="ranking-table-container">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px; text-align: center;">Pos</th>
+                            <th>Campeón</th>
+                            <th style="text-align: center;">Títulos ${formatFilter === 'all' ? 'Totales' : ''}</th>
+                            <th style="text-align: center;">Torneos Jugados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        champions.forEach((c, idx) => {
+            const medal = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : ''));
+            html += `
+                <tr>
+                    <td style="text-align: center; font-weight: 800; color: #00F0FF;">#${idx + 1}</td>
+                    <td style="font-weight: 700; font-size: 1.05rem;">${medal}${c.name}</td>
+                    <td style="text-align: center; font-weight: 900; color: #FFD700; font-size: 1.1rem;">${c.titles}</td>
+                    <td style="text-align: center; color: #94a3b8;">${c.playedCount}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    // Input listeners for Teams Search and Ranking Tabs
+    setTimeout(() => {
+        const teamsSearchInput = document.getElementById('teams-search-input');
+        if (teamsSearchInput) {
+            teamsSearchInput.addEventListener('input', renderTeamsView);
+        }
+        document.querySelectorAll('.ranking-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.ranking-tab-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                const format = e.currentTarget.getAttribute('data-format');
+                renderRankingView(format);
+            });
+        });
+    }, 100);
 
     function calculateAndDrawStats() {
         const teamStats = {};
