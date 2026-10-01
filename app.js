@@ -3703,19 +3703,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const leagueThemeSelect = document.getElementById('league-theme-select');
-        const leagueThemeBanner = document.getElementById('league-theme-info-banner');
-        if (leagueThemeSelect && leagueThemeBanner) {
-            const val = leagueThemeSelect.value;
-            if (val === 'brasileirao' || val === 'argentina' || val === 'chile') {
-                leagueThemeBanner.innerHTML = '🏆 <strong>Temática Sudamericana:</strong> Destaca zonas para Copa Libertadores (Top 4), Pre-Libertadores, Sudamericana y Descenso.';
-            } else if (val === 'mls') {
-                leagueThemeBanner.innerHTML = '🇺🇸 <strong>Temática MLS:</strong> Destaca los mejores 7 puestos de la tabla.';
-            } else {
-                leagueThemeBanner.innerHTML = '🇪🇺 <strong>Temática Europea:</strong> Destaca zonas para UEFA Champions League (Top 4), Europa League y Conference League.';
-            }
-        }
-
         const leaguePlayoffsSelect = document.getElementById('league-playoffs-select');
         const leaguePlayoffsBanner = document.getElementById('league-playoffs-info-banner');
         if (leaguePlayoffsSelect && leaguePlayoffsBanner) {
@@ -3729,7 +3716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    ['champions-type-select', 'copa-schedule-select', 'league-schedule-select', 'league-theme-select', 'league-playoffs-select'].forEach(id => {
+    ['champions-type-select', 'copa-schedule-select', 'league-schedule-select', 'league-playoffs-select'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', updateDropdownInfoBanners);
     });
