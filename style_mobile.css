@@ -279,37 +279,6 @@ button {
     letter-spacing: 2px;
 }
 
-/* Global Back Button */
-.global-back-btn {
-    position: fixed;
-    top: 1.5rem;
-    left: 1.5rem;
-    background: rgba(7, 13, 30, 0.85);
-    border: 2px solid #00F0FF;
-    color: #00F0FF;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10000;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.35), 0 4px 15px rgba(0, 0, 0, 0.6);
-    padding: 0;
-}
-.global-back-btn:hover {
-    background: #00F0FF;
-    color: #050B14;
-    box-shadow: 0 0 22px rgba(0, 240, 255, 0.85);
-    transform: translateX(-3px) scale(1.08);
-}
-.global-back-btn svg {
-    width: 24px;
-    height: 24px;
-}
 
 /* Header Back Button & Container */
 .view-header-with-back {
@@ -2391,10 +2360,6 @@ body.theme-champions #bracket-view::before {
     .hamburger-menu {
         display: none !important;
     }
-    .global-back-btn {
-        top: 1.5rem;
-        left: calc(230px + 1.5rem);
-    }
 }
 
 @media (max-width: 991px) {
@@ -2406,12 +2371,6 @@ body.theme-champions #bracket-view::before {
     }
     .hero-middle-grid, .hero-bottom-features {
         grid-template-columns: 1fr;
-    }
-    .global-back-btn {
-        top: 1rem;
-        left: 1rem;
-        width: 44px;
-        height: 44px;
     }
 }
 

@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroContinueContainer = document.getElementById('hero-continue-container');
     const continueName = document.getElementById('continue-name');
     const formatCards = document.querySelectorAll('.format-card');
-    const btnGlobalBack = document.getElementById('btn-global-back');
 
     const groupsContainer = document.getElementById('groups-container');
     const btnToBracket = document.getElementById('btn-to-bracket');
@@ -370,13 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         view.classList.add('active');
 
-        // Toggle back button visibility: Visible on ALL views EXCEPT homeView!
-        if (view !== homeView) {
-            btnGlobalBack.classList.remove('hidden');
-        } else {
-            btnGlobalBack.classList.add('hidden');
-        }
-
         // Toggle stats menu visibility based on view
         const menuStatsBtn = document.getElementById('btn-menu-stats');
         if (menuStatsBtn) {
@@ -686,10 +678,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showView(homeView, false);
         }
     };
-
-    if (btnGlobalBack) {
-        btnGlobalBack.addEventListener('click', window.goBack);
-    }
 
     document.querySelectorAll('.btn-header-back').forEach(btn => {
         btn.addEventListener('click', window.goBack);
