@@ -450,8 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const leagueScheduleSelect = document.getElementById('league-schedule-select');
         if (leagueScheduleSelect) leagueScheduleSelect.value = 'double';
         
-        const leagueThemeSelect = document.getElementById('league-theme-select');
-        if (leagueThemeSelect) leagueThemeSelect.value = 'brasileirao';
+
         
         if (typeof window.updateSetupViewLayout === 'function') {
             window.updateSetupViewLayout();
@@ -683,17 +682,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', window.goBack);
     });
 
-    const allThemeClasses = ['theme-champions', 'theme-copa', 'theme-brasileirao', 'theme-premier', 'theme-laliga', 'theme-seriea', 'theme-bundesliga', 'theme-ligue1', 'theme-argentina', 'theme-mls', 'theme-eredivisie', 'theme-primeira', 'theme-chile'];
     window.updateAppTheme = function() {
-        document.body.classList.remove(...allThemeClasses);
+        document.body.classList.remove('theme-champions', 'theme-copa', 'theme-brasileirao', 'theme-premier', 'theme-laliga', 'theme-seriea', 'theme-bundesliga', 'theme-ligue1', 'theme-argentina', 'theme-mls', 'theme-eredivisie', 'theme-primeira', 'theme-chile');
         if (state.format === 'champions') {
             document.body.classList.add('theme-champions');
         } else if (state.format === 'copa') {
             document.body.classList.add('theme-copa');
-        } else if (state.format === 'liga') {
-            const leagueThemeSelect = document.getElementById('league-theme-select');
-            const theme = leagueThemeSelect ? leagueThemeSelect.value : 'brasileirao';
-            document.body.classList.add(`theme-${theme}`);
         }
     };
 
@@ -723,15 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const leagueThemeSelect = document.getElementById('league-theme-select');
-    if (leagueThemeSelect) {
-        leagueThemeSelect.addEventListener('change', () => {
-            if (state.format === 'liga') {
-                state.leagueTheme = leagueThemeSelect.value;
-                window.updateAppTheme();
-            }
-        });
-    }
+
 
     const customChampionsConfig = document.getElementById('custom-champions-config');
     const manualRulesPanel = document.getElementById('manual-rules-panel');
@@ -1104,10 +1090,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
             const leagueScheduleSelect = document.getElementById('league-schedule-select');
-            const leagueThemeSelect = document.getElementById('league-theme-select');
             const leagueTiebreakSelect = document.getElementById('league-tiebreak-select');
             state.leagueSchedule = leagueScheduleSelect ? leagueScheduleSelect.value : 'double';
-            state.leagueTheme = leagueThemeSelect ? leagueThemeSelect.value : 'brasileirao';
             state.leagueTiebreak = leagueTiebreakSelect ? leagueTiebreakSelect.value : 'dg';
 
             for (let i = 0; i < gCount; i++) {
@@ -1430,27 +1414,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (state.format === 'liga') {
                                 const tRank = idx + 1;
                                 const tTotal = tableData.length;
-                                const theme = state.leagueTheme || 'brasileirao';
                                 if (tRank === 1) trClass = 'rank-champion';
-                                else {
-                                    if (['brasileirao', 'argentina', 'chile'].includes(theme)) {
-                                        if (tRank <= 4) trClass = 'rank-libertadores';
-                                        else if (tRank <= 6) trClass = 'rank-prelibertadores';
-                                        else if (tRank >= 7 && tRank <= 12) trClass = 'rank-sudamericana';
-                                    } else if (['premier', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'eredivisie', 'primeira'].includes(theme)) {
-                                        if (tRank <= 4) trClass = 'rank-champions';
-                                        else if (tRank <= 5) trClass = 'rank-europa';
-                                        else if (tRank === 6) trClass = 'rank-conference';
-                                    }
-                                    if (theme === 'mls') {
-                                        if (tRank <= 7) trClass = 'rank-champions'; 
-                                    } else {
-                                        const relegationSpots = (theme === 'brasileirao' || theme === 'argentina' || theme === 'chile') ? 4 : 3;
-                                        if (tRank > tTotal - relegationSpots && tTotal >= 10) {
-                                            trClass = 'rank-relegation';
-                                        }
-                                    }
-                                }
+                                else if (tRank <= 4) trClass = 'rank-champions';
+                                else if (tRank > tTotal - 3 && tTotal >= 10) trClass = 'rank-relegation';
                             } else {
                                 if (qualifierMap[t.id] === 'direct') trClass = 'qualifier';
                                 else if (qualifierMap[t.id] === 'wildcard') trClass = 'qualifier wildcard';
