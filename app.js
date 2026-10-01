@@ -361,15 +361,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pushToHistory) {
             const currentView = document.querySelector('.view.active');
             if (currentView && currentView !== view) {
-                viewHistory.push(currentView);
+                if (viewHistory.length === 0 || viewHistory[viewHistory.length - 1] !== currentView) {
+                    viewHistory.push(currentView);
+                }
             }
         }
 
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         view.classList.add('active');
 
-        // Toggle back button visibility
-        if (viewHistory.length > 0) {
+        // Toggle back button visibility: Visible on ALL views EXCEPT homeView!
+        if (view !== homeView) {
             btnGlobalBack.classList.remove('hidden');
         } else {
             btnGlobalBack.classList.add('hidden');
@@ -672,9 +674,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnGlobalBack.addEventListener('click', () => {
+        const currentView = document.querySelector('.view.active');
+        while (viewHistory.length > 0 && viewHistory[viewHistory.length - 1] === currentView) {
+            viewHistory.pop();
+        }
+
         if (viewHistory.length > 0) {
             const prevView = viewHistory.pop();
             showView(prevView, false);
+        } else {
+            showView(homeView, false);
         }
     });
 
