@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.knockoutFormat = e.target.value;
         if (document.getElementById('bracket-view').classList.contains('active')) {
             if (state.format === 'liga') {
-                transitionLigaToCopa();
+                runPlayoffsTransition(state.leaguePlayoffQty || 4, state.leaguePlayoffFormat || 'direct');
             } else {
                 state.bracketGenerated = false;
                 generateBracket();
@@ -1734,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${isDouble ? '<label>Ida</label>' : (isBestOf3 ? '<label>P1</label>' : '')}
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1" value="${m.s1 !== null ? m.s1 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
-                    ${isBestOf3 && ((m.s1 !== null && m.s2 !== null && parseInt(m.s1) === parseInt(m.s2)) || m.p1_1 !== null || m.p2_1 !== null) ? `
+                    ${isBestOf3 && m.s1 !== null && m.s2 !== null && parseInt(m.s1) === parseInt(m.s2) ? `
                     <div class="score-box">
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_1" value="${m.p1_1 !== null ? m.p1_1 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
@@ -1751,7 +1751,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>P2</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_v" value="${m.s1_v !== null ? m.s1_v : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
-                    ${(m.s1_v !== null && m.s2_v !== null && parseInt(m.s1_v) === parseInt(m.s2_v)) || m.p1_2 !== null || m.p2_2 !== null ? `
+                    ${m.s1_v !== null && m.s2_v !== null && parseInt(m.s1_v) === parseInt(m.s2_v) ? `
                     <div class="score-box">
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_2" value="${m.p1_2 !== null ? m.p1_2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
@@ -1761,7 +1761,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>P3</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_m3" value="${m.s1_m3 !== null ? m.s1_m3 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
-                    ${(m.s1_m3 !== null && m.s2_m3 !== null && parseInt(m.s1_m3) === parseInt(m.s2_m3)) || m.p1_3 !== null || m.p2_3 !== null ? `
+                    ${m.s1_m3 !== null && m.s2_m3 !== null && parseInt(m.s1_m3) === parseInt(m.s2_m3) ? `
                     <div class="score-box">
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_3" value="${m.p1_3 !== null ? m.p1_3 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
@@ -1784,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${isDouble ? '<label>Ida</label>' : (isBestOf3 ? '<label>P1</label>' : '')}
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2" value="${m.s2 !== null ? m.s2 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
-                    ${isBestOf3 && ((m.s1 !== null && m.s2 !== null && parseInt(m.s1) === parseInt(m.s2)) || m.p1_1 !== null || m.p2_1 !== null) ? `
+                    ${isBestOf3 && m.s1 !== null && m.s2 !== null && parseInt(m.s1) === parseInt(m.s2) ? `
                     <div class="score-box">
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_1" value="${m.p2_1 !== null ? m.p2_1 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
@@ -1801,7 +1801,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>P2</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_v" value="${m.s2_v !== null ? m.s2_v : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
-                    ${(m.s1_v !== null && m.s2_v !== null && parseInt(m.s1_v) === parseInt(m.s2_v)) || m.p1_2 !== null || m.p2_2 !== null ? `
+                    ${m.s1_v !== null && m.s2_v !== null && parseInt(m.s1_v) === parseInt(m.s2_v) ? `
                     <div class="score-box">
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_2" value="${m.p2_2 !== null ? m.p2_2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
@@ -1811,7 +1811,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>P3</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_m3" value="${m.s2_m3 !== null ? m.s2_m3 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
-                    ${(m.s1_m3 !== null && m.s2_m3 !== null && parseInt(m.s1_m3) === parseInt(m.s2_m3)) || m.p1_3 !== null || m.p2_3 !== null ? `
+                    ${m.s1_m3 !== null && m.s2_m3 !== null && parseInt(m.s1_m3) === parseInt(m.s2_m3) ? `
                     <div class="score-box">
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_3" value="${m.p2_3 !== null ? m.p2_3 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
@@ -2082,7 +2082,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 match[type] = val;
                 match.isFinished = false;
 
-                // Si se borra el puntaje, limpiar penales para evitar inconsistencias
+                // Si el partido ya no esta empatado o se borra un puntaje, limpiar penales correspondientes
+                if (match.s1 === null || match.s2 === null || parseInt(match.s1) !== parseInt(match.s2)) {
+                    match.p1_1 = null; match.p2_1 = null;
+                }
+                if (match.s1_v === null || match.s2_v === null || parseInt(match.s1_v) !== parseInt(match.s2_v)) {
+                    match.p1_2 = null; match.p2_2 = null;
+                }
+                if (match.s1_m3 === null || match.s2_m3 === null || parseInt(match.s1_m3) !== parseInt(match.s2_m3)) {
+                    match.p1_3 = null; match.p2_3 = null;
+                }
                 if (type.startsWith('s') && val === null) {
                     match.p1 = null; match.p2 = null;
                 }
