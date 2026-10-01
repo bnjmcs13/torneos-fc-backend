@@ -1062,19 +1062,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     circle.splice(1, 0, circle.pop());
                 }
 
-                // Append returning leg matches if league double round robin
-                if (state.format === 'liga' && state.leagueSchedule === 'double') {
-                    const nMatches = matches.length;
-                    for (let m = 0; m < nMatches; m++) {
-                        const original = matches[m];
-                        matches.push({
-                            id: original.id + '-V',
-                            t1: original.t2, // Reversed home/away
-                            t2: original.t1,
-                            s1: null,
-                            s2: null,
-                            round: original.round + rounds
-                        });
+                // Append returning leg matches if league double or best_of_3 round robin
+                if (state.format === 'liga') {
+                    if (state.leagueSchedule === 'double') {
+                        const nMatches = matches.length;
+                        for (let m = 0; m < nMatches; m++) {
+                            const original = matches[m];
+                            matches.push({
+                                id: original.id + '-V',
+                                t1: original.t2, // Reversed home/away
+                                t2: original.t1,
+                                s1: null,
+                                s2: null,
+                                round: original.round + rounds
+                            });
+                        }
+                    } else if (state.leagueSchedule === 'best_of_3') {
+                        const nMatches = matches.length;
+                        for (let m = 0; m < nMatches; m++) {
+                            const original = matches[m];
+                            // Leg 2
+                            matches.push({
+                                id: original.id + '-V1',
+                                t1: original.t2,
+                                t2: original.t1,
+                                s1: null,
+                                s2: null,
+                                round: original.round + rounds
+                            });
+                            // Leg 3
+                            matches.push({
+                                id: original.id + '-V2',
+                                t1: original.t1,
+                                t2: original.t2,
+                                s1: null,
+                                s2: null,
+                                round: original.round + (rounds * 2)
+                            });
+                        }
                     }
                 }
 
@@ -1610,6 +1635,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 g1 = match.s1;
                 g2 = match.s2;
             }
+        } else if (state.knockoutFormat === 'best_of_3') {
+            let w1 = 0, w2 = 0;
+            let matchesPlayed = 0;
+
+            if (match.s1 !== null && match.s2 !== null) {
+                matchesPlayed++;
+                if (match.s1 > match.s2) w1++;
+                else if (match.s2 > match.s1) w2++;
+            }
+            if (match.s1_v !== null && match.s2_v !== null) {
+                matchesPlayed++;
+                if (match.s1_v > match.s2_v) w1++;
+                else if (match.s2_v > match.s1_v) w2++;
+            }
+            if (match.s1_m3 !== null && match.s2_m3 !== null) {
+                matchesPlayed++;
+                if (match.s1_m3 > match.s2_m3) w1++;
+                else if (match.s2_m3 > match.s1_m3) w2++;
+            }
+
+            if (w1 >= 2) return match.t1;
+            if (w2 >= 2) return match.t2;
+
+            if (matchesPlayed >= 3 || (matchesPlayed >= 2 && w1 === 1 && w2 === 1 && match.s1_m3 !== null && match.s2_m3 !== null)) {
+                if (w1 > w2) return match.t1;
+                if (w2 > w1) return match.t2;
+                if (match.p1 !== null && match.p2 !== null && match.p1 !== match.p2) {
+                    return match.p1 > match.p2 ? match.t1 : match.t2;
+                }
+                return 'tie';
+            }
+            return null;
         } else {
             if (match.s1 !== null && match.s2 !== null && match.s1_v !== null && match.s2_v !== null) {
                 isComplete = true;
@@ -1659,6 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const winnerObj = checkMatchWinner(m);
         const isTie = winnerObj === 'tie';
         const isDouble = state.knockoutFormat === 'double';
+        const isBestOf3 = state.knockoutFormat === 'best_of_3';
 
         let showPenalties = isTie || m.p1 !== null || m.p2 !== null;
 
@@ -1667,13 +1725,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="bracket-team-name">${m.t1 ? m.t1.name : 'TBD'}</span>
                 <div class="bracket-score">
                     <div class="score-box">
-                        ${isDouble ? '<label>Ida</label>' : ''}
+                        ${isDouble ? '<label>Ida</label>' : (isBestOf3 ? '<label>P1</label>' : '')}
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1" value="${m.s1 !== null ? m.s1 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
                     ${isDouble ? `
                     <div class="score-box">
                         <label>Vta</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_v" value="${m.s1_v !== null ? m.s1_v : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
+                    ${isBestOf3 ? `
+                    <div class="score-box">
+                        <label>P2</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_v" value="${m.s1_v !== null ? m.s1_v : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    <div class="score-box">
+                        <label>P3</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_m3" value="${m.s1_m3 !== null ? m.s1_m3 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
                     ` : ''}
                     ${showPenalties ? `
@@ -1689,15 +1757,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="bracket-team-name">${m.t2 ? m.t2.name : 'TBD'}</span>
                 <div class="bracket-score">
                     <div class="score-box">
+                        ${isDouble ? '<label>Ida</label>' : (isBestOf3 ? '<label>P1</label>' : '')}
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2" value="${m.s2 !== null ? m.s2 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
                     ${isDouble ? `
                     <div class="score-box">
+                        <label>Vta</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_v" value="${m.s2_v !== null ? m.s2_v : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
+                    ${isBestOf3 ? `
+                    <div class="score-box">
+                        <label>P2</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_v" value="${m.s2_v !== null ? m.s2_v : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
+                    </div>
+                    <div class="score-box">
+                        <label>P3</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_m3" value="${m.s2_m3 !== null ? m.s2_m3 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
                     ` : ''}
                     ${showPenalties ? `
                     <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2" value="${m.p2 !== null ? m.p2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
                     </div>
                     ` : ''}
@@ -1981,10 +2062,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mIdx = parseInt(e.currentTarget.getAttribute('data-m'));
                 const match = state.bracketRounds[rIdx][mIdx];
                 
-                // Allow finish if single or double have required fields
+                // Allow finish if single, double, or best_of_3 have required fields
                 let isComplete = false;
                 if (state.knockoutFormat === 'single') {
                     if (match.s1 !== null && match.s2 !== null) isComplete = true;
+                } else if (state.knockoutFormat === 'best_of_3') {
+                    let w1 = 0, w2 = 0;
+                    if (match.s1 !== null && match.s2 !== null) {
+                        if (match.s1 > match.s2) w1++;
+                        else if (match.s2 > match.s1) w2++;
+                    }
+                    if (match.s1_v !== null && match.s2_v !== null) {
+                        if (match.s1_v > match.s2_v) w1++;
+                        else if (match.s2_v > match.s1_v) w2++;
+                    }
+                    if (w1 >= 2 || w2 >= 2) {
+                        isComplete = true;
+                    } else if (match.s1 !== null && match.s2 !== null && match.s1_v !== null && match.s2_v !== null && match.s1_m3 !== null && match.s2_m3 !== null) {
+                        isComplete = true;
+                    }
                 } else {
                     if (match.s1 !== null && match.s2 !== null && match.s1_v !== null && match.s2_v !== null) isComplete = true;
                 }
@@ -3625,8 +3721,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'match-schedule': {
             title: '⚽ Modalidad de Partidos',
-            desc: 'Define la cantidad de encuentros por enfrentamiento:\n\n• Partido Único (Solo Ida): 1 solo partido directo. El ganador del partido gana la serie. En eliminatorias, si empatan se define por penales.\n\n• Ida y Vuelta: Se disputan 2 partidos seguidos por enfrentamiento (Ida y Vuelta). Se suman los goles globales acumulados en ambos encuentros.',
-            example: 'En Ida y Vuelta: Partido 1 quedas 2-1 y Partido 2 quedas 1-1. El marcador global es 3-2 a tu favor y clasificas.'
+            desc: 'Define la cantidad de encuentros por enfrentamiento:\n\n• Partido Único: 1 solo partido directo. En eliminatorias, si empatan se define por penales.\n\n• Ida y Vuelta (Goles Acumulados): Se disputan 2 partidos seguidos por enfrentamiento (Ida y Vuelta). Avanza el equipo que sume más goles en el marcador global acumulado.\n\n• Ida y Vuelta (Mejor de 3): Serie donde gana el primer equipo en lograr 2 victorias. Si un equipo gana los 2 primeros partidos, avanza directamente sin necesidad de jugar el 3er partido.',
+            example: 'En Mejor de 3: Si ganas el Partido 1 (2-1) y ganas el Partido 2 (1-0), sumas 2 victorias y ganas la serie 2-0.'
         },
         'league-theme': {
             title: '🎨 Selección de Liga (Temática)',
@@ -3686,8 +3782,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const copaSchedSelect = document.getElementById('copa-schedule-select');
         const copaBanner = document.getElementById('copa-schedule-info-banner');
         if (copaSchedSelect && copaBanner) {
-            if (copaSchedSelect.value === 'double') {
-                copaBanner.innerHTML = '🔄 <strong>Ida y Vuelta:</strong> Se juegan 2 partidos por serie. Avanza quien anote más goles en el acumulado global.';
+            if (copaSchedSelect.value === 'best_of_3') {
+                copaBanner.innerHTML = '🥊 <strong>Ida y Vuelta (Mejor de 3):</strong> Gana el primer equipo en lograr 2 victorias en la serie.';
+            } else if (copaSchedSelect.value === 'double') {
+                copaBanner.innerHTML = '🔄 <strong>Ida y Vuelta (Goles Acumulados):</strong> Se juegan 2 partidos por serie. Avanza quien anote más goles en el acumulado global.';
             } else {
                 copaBanner.innerHTML = '⚽ <strong>Partido Único:</strong> 1 solo enfrentamiento directo por serie. En caso de empate se define por penales.';
             }
@@ -3696,8 +3794,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const leagueSchedSelect = document.getElementById('league-schedule-select');
         const leagueBanner = document.getElementById('league-schedule-info-banner');
         if (leagueSchedSelect && leagueBanner) {
-            if (leagueSchedSelect.value === 'double') {
-                leagueBanner.innerHTML = '🔄 <strong>Ida y Vuelta:</strong> Todos jugarán 2 veces contra cada rival de la liga (Local y Visitante).';
+            if (leagueSchedSelect.value === 'best_of_3') {
+                leagueBanner.innerHTML = '🥊 <strong>Ida y Vuelta (Mejor de 3):</strong> 3 enfrentamientos directos contra cada rival de la liga.';
+            } else if (leagueSchedSelect.value === 'double') {
+                leagueBanner.innerHTML = '🔄 <strong>Ida y Vuelta (Goles Acumulados):</strong> 2 partidos contra cada rival de la liga (Local y Visitante).';
             } else {
                 leagueBanner.innerHTML = '⚽ <strong>Solo Ida:</strong> 1 único enfrentamiento contra cada rival de la liga.';
             }

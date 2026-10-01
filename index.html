@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=14">
+    <link rel="stylesheet" href="style_mobile.css?v=15">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -181,7 +181,8 @@
                         <label>Modalidad de Partidos: <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
                         <select id="copa-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
                             <option value="single" selected>Partido Único</option>
-                            <option value="double">Ida y Vuelta</option>
+                            <option value="double">Ida y Vuelta (Goles Acumulados)</option>
+                            <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
                         </select>
                         <div id="copa-schedule-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
                     </div>
@@ -194,7 +195,8 @@
                         <label for="league-schedule-select">Formato de Partidos (Fase de Liga): <button type="button" class="btn-info-icon" data-info="match-schedule" title="Ver explicación">ℹ️</button></label>
                         <select id="league-schedule-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
                             <option value="single">Partido Único (Solo Ida)</option>
-                            <option value="double" selected>Ida y Vuelta</option>
+                            <option value="double" selected>Ida y Vuelta (Goles Acumulados)</option>
+                            <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
                         </select>
                         <div id="league-schedule-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
                     </div>
@@ -287,7 +289,8 @@
                     <button class="btn-secondary btn-inline-code" style="color:#00F0FF; border-color:#00F0FF;">👁️ Ver Código</button>
                     <select id="bracket-format-select" class="form-select">
                         <option value="single">Partido Único</option>
-                        <option value="double">Ida y Vuelta</option>
+                        <option value="double">Ida y Vuelta (Goles Acumulados)</option>
+                        <option value="best_of_3">Ida y Vuelta (Mejor de 3)</option>
                     </select>
                     <button id="btn-to-groups" class="btn-secondary">Volver a Grupos</button>
                 </div>
@@ -449,6 +452,6 @@
         }
     </script>
 
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
 </body>
 </html>
