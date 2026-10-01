@@ -1622,6 +1622,21 @@ document.addEventListener('DOMContentLoaded', () => {
         drawBracket();
     }
 
+    function getIndividualMatchWinner(s1, s2, p1, p2) {
+        if (s1 === null || s2 === null) return null;
+        const n1 = parseInt(s1);
+        const n2 = parseInt(s2);
+        if (n1 > n2) return 1;
+        if (n2 > n1) return 2;
+        if (p1 !== null && p2 !== null) {
+            const pen1 = parseInt(p1);
+            const pen2 = parseInt(p2);
+            if (pen1 > pen2) return 1;
+            if (pen2 > pen1) return 2;
+        }
+        return 'tie';
+    }
+
     function checkMatchWinner(match) {
         if (match.isFinished === undefined && match.s1 !== null && match.s2 !== null) match.isFinished = true; // Retro
         if (!match.isFinished) return null;
@@ -1636,34 +1651,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 g2 = match.s2;
             }
         } else if (state.knockoutFormat === 'best_of_3') {
-            let w1 = 0, w2 = 0;
-            let matchesPlayed = 0;
+            const w1 = getIndividualMatchWinner(match.s1, match.s2, match.p1_1, match.p2_1);
+            const w2 = getIndividualMatchWinner(match.s1_v, match.s2_v, match.p1_2, match.p2_2);
+            const w3 = getIndividualMatchWinner(match.s1_m3, match.s2_m3, match.p1_3, match.p2_3);
 
-            if (match.s1 !== null && match.s2 !== null) {
-                matchesPlayed++;
-                if (match.s1 > match.s2) w1++;
-                else if (match.s2 > match.s1) w2++;
-            }
-            if (match.s1_v !== null && match.s2_v !== null) {
-                matchesPlayed++;
-                if (match.s1_v > match.s2_v) w1++;
-                else if (match.s2_v > match.s1_v) w2++;
-            }
-            if (match.s1_m3 !== null && match.s2_m3 !== null) {
-                matchesPlayed++;
-                if (match.s1_m3 > match.s2_m3) w1++;
-                else if (match.s2_m3 > match.s1_m3) w2++;
+            let wins1 = 0, wins2 = 0;
+            if (w1 === 1) wins1++; else if (w1 === 2) wins2++;
+            if (w2 === 1) wins1++; else if (w2 === 2) wins2++;
+            if (w3 === 1) wins1++; else if (w3 === 2) wins2++;
+
+            if (wins1 >= 2) return match.t1;
+            if (wins2 >= 2) return match.t2;
+
+            if (w1 === 'tie' || w2 === 'tie' || w3 === 'tie') {
+                return 'tie';
             }
 
-            if (w1 >= 2) return match.t1;
-            if (w2 >= 2) return match.t2;
-
-            if (matchesPlayed >= 3 || (matchesPlayed >= 2 && w1 === 1 && w2 === 1 && match.s1_m3 !== null && match.s2_m3 !== null)) {
-                if (w1 > w2) return match.t1;
-                if (w2 > w1) return match.t2;
-                if (match.p1 !== null && match.p2 !== null && match.p1 !== match.p2) {
-                    return match.p1 > match.p2 ? match.t1 : match.t2;
-                }
+            if (w1 !== null && w2 !== null && w3 !== null) {
+                if (wins1 > wins2) return match.t1;
+                if (wins2 > wins1) return match.t2;
                 return 'tie';
             }
             return null;
@@ -1718,7 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDouble = state.knockoutFormat === 'double';
         const isBestOf3 = state.knockoutFormat === 'best_of_3';
 
-        let showPenalties = isTie || m.p1 !== null || m.p2 !== null;
+        let showPenalties = !isBestOf3 && (isTie || m.p1 !== null || m.p2 !== null);
 
         let html = `
             <div class="bracket-team ${winnerObj !== null && winnerObj !== 'tie' && winnerObj.id === (m.t1 && m.t1.id) ? 'winner' : ''}">
@@ -1728,6 +1734,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${isDouble ? '<label>Ida</label>' : (isBestOf3 ? '<label>P1</label>' : '')}
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1" value="${m.s1 !== null ? m.s1 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
+                    ${isBestOf3 && ((m.s1 !== null && m.s2 !== null && parseInt(m.s1) === parseInt(m.s2)) || m.p1_1 !== null || m.p2_1 !== null) ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_1" value="${m.p1_1 !== null ? m.p1_1 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
                     ${isDouble ? `
                     <div class="score-box">
                         <label>Vta</label>
@@ -1739,10 +1751,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>P2</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_v" value="${m.s1_v !== null ? m.s1_v : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
+                    ${(m.s1_v !== null && m.s2_v !== null && parseInt(m.s1_v) === parseInt(m.s2_v)) || m.p1_2 !== null || m.p2_2 !== null ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_2" value="${m.p1_2 !== null ? m.p1_2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
                     <div class="score-box">
                         <label>P3</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_m3" value="${m.s1_m3 !== null ? m.s1_m3 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
+                    ${(m.s1_m3 !== null && m.s2_m3 !== null && parseInt(m.s1_m3) === parseInt(m.s2_m3)) || m.p1_3 !== null || m.p2_3 !== null ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_3" value="${m.p1_3 !== null ? m.p1_3 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
                     ` : ''}
                     ${showPenalties ? `
                     <div class="score-box">
@@ -1760,6 +1784,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${isDouble ? '<label>Ida</label>' : (isBestOf3 ? '<label>P1</label>' : '')}
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2" value="${m.s2 !== null ? m.s2 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
+                    ${isBestOf3 && ((m.s1 !== null && m.s2 !== null && parseInt(m.s1) === parseInt(m.s2)) || m.p1_1 !== null || m.p2_1 !== null) ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_1" value="${m.p2_1 !== null ? m.p2_1 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
                     ${isDouble ? `
                     <div class="score-box">
                         <label>Vta</label>
@@ -1771,10 +1801,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label>P2</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_v" value="${m.s2_v !== null ? m.s2_v : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
+                    ${(m.s1_v !== null && m.s2_v !== null && parseInt(m.s1_v) === parseInt(m.s2_v)) || m.p1_2 !== null || m.p2_2 !== null ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_2" value="${m.p2_2 !== null ? m.p2_2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
                     <div class="score-box">
                         <label>P3</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_m3" value="${m.s2_m3 !== null ? m.s2_m3 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
                     </div>
+                    ${(m.s1_m3 !== null && m.s2_m3 !== null && parseInt(m.s1_m3) === parseInt(m.s2_m3)) || m.p1_3 !== null || m.p2_3 !== null ? `
+                    <div class="score-box">
+                        <label style="color:#FFD700">PEN</label>
+                        <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_3" value="${m.p2_3 !== null ? m.p2_3 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
+                    </div>
+                    ` : ''}
                     ` : ''}
                     ${showPenalties ? `
                     <div class="score-box">
@@ -2067,18 +2109,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (state.knockoutFormat === 'single') {
                     if (match.s1 !== null && match.s2 !== null) isComplete = true;
                 } else if (state.knockoutFormat === 'best_of_3') {
-                    let w1 = 0, w2 = 0;
-                    if (match.s1 !== null && match.s2 !== null) {
-                        if (match.s1 > match.s2) w1++;
-                        else if (match.s2 > match.s1) w2++;
-                    }
-                    if (match.s1_v !== null && match.s2_v !== null) {
-                        if (match.s1_v > match.s2_v) w1++;
-                        else if (match.s2_v > match.s1_v) w2++;
-                    }
-                    if (w1 >= 2 || w2 >= 2) {
+                    const w1 = getIndividualMatchWinner(match.s1, match.s2, match.p1_1, match.p2_1);
+                    const w2 = getIndividualMatchWinner(match.s1_v, match.s2_v, match.p1_2, match.p2_2);
+                    const w3 = getIndividualMatchWinner(match.s1_m3, match.s2_m3, match.p1_3, match.p2_3);
+
+                    let wins1 = 0, wins2 = 0;
+                    if (w1 === 1) wins1++; else if (w1 === 2) wins2++;
+                    if (w2 === 1) wins1++; else if (w2 === 2) wins2++;
+                    if (w3 === 1) wins1++; else if (w3 === 2) wins2++;
+
+                    if (wins1 >= 2 || wins2 >= 2) {
                         isComplete = true;
-                    } else if (match.s1 !== null && match.s2 !== null && match.s1_v !== null && match.s2_v !== null && match.s1_m3 !== null && match.s2_m3 !== null) {
+                    } else if (w1 !== null && w1 !== 'tie' && w2 !== null && w2 !== 'tie' && w3 !== null && w3 !== 'tie') {
                         isComplete = true;
                     }
                 } else {
