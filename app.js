@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedView = document.getElementById('saved-view');
     const statsView = document.getElementById('stats-view');
     const teamsView = document.getElementById('teams-view');
+    const configView = document.getElementById('config-view');
     
     const btnCreateTournament = document.getElementById('btn-create-tournament');
     const btnHeroSaved = document.getElementById('btn-hero-saved');
@@ -580,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navSaved) navSaved.addEventListener('click', () => { setActiveNavItem(navSaved); renderSavedTournaments(); showView(savedView, true); });
     if (navTeams) navTeams.addEventListener('click', () => { setActiveNavItem(navTeams); renderTeamsView(); showView(teamsView, true); });
     if (navRanking) navRanking.addEventListener('click', () => { setActiveNavItem(navRanking); renderRankingView('all'); showView(statsView, true); });
-    if (navConfig) navConfig.addEventListener('click', () => { setActiveNavItem(navConfig); showView(setupView, true); });
+    if (navConfig) navConfig.addEventListener('click', () => { setActiveNavItem(navConfig); loadGlobalConfigUI(); showView(configView, true); });
     if (navSupport) navSupport.addEventListener('click', () => { openInfoModal('champions-format'); });
 
     btnMenuReset.addEventListener('click', () => {
@@ -2972,6 +2973,173 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }, 100);
+    // ==========================================
+    // CONFIGURACIÓN GLOBAL Y TEMAS VISUALES
+    // ==========================================
+    const DEFAULT_CONFIG = {
+        theme: 'stadium',
+        stars: true,
+        confetti: true,
+        pointsWin: 3,
+        tiebreak: 'dg',
+        autosave: true
+    };
+
+    function getGlobalConfig() {
+        try {
+            const saved = localStorage.getItem('torneos-fc-global-config');
+            return saved ? Object.assign({}, DEFAULT_CONFIG, JSON.parse(saved)) : DEFAULT_CONFIG;
+        } catch (e) {
+            return DEFAULT_CONFIG;
+        }
+    }
+
+    function saveGlobalConfig(newConfig) {
+        localStorage.setItem('torneos-fc-global-config', JSON.stringify(newConfig));
+        applyGlobalConfig(newConfig);
+    }
+
+    function applyGlobalConfig(cfg = getGlobalConfig()) {
+        document.body.classList.remove('theme-stadium', 'theme-neon', 'theme-gold', 'theme-dark');
+        if (cfg.theme && cfg.theme !== 'stadium') {
+            document.body.classList.add(`theme-${cfg.theme}`);
+        }
+        const starsBg = document.querySelector('.stars-bg');
+        if (starsBg) {
+            starsBg.style.display = cfg.stars !== false ? 'block' : 'none';
+        }
+    }
+
+    function loadGlobalConfigUI() {
+        const cfg = getGlobalConfig();
+        const themeSelect = document.getElementById('config-theme-select');
+        const starsToggle = document.getElementById('config-stars-toggle');
+        const confettiToggle = document.getElementById('config-confetti-toggle');
+        const pointsWinSelect = document.getElementById('config-points-win');
+        const tiebreakSelect = document.getElementById('config-tiebreak-select');
+        const autosaveToggle = document.getElementById('config-autosave-toggle');
+
+        if (themeSelect) themeSelect.value = cfg.theme || 'stadium';
+        if (starsToggle) starsToggle.checked = cfg.stars !== false;
+        if (confettiToggle) confettiToggle.checked = cfg.confetti !== false;
+        if (pointsWinSelect) pointsWinSelect.value = cfg.pointsWin || 3;
+        if (tiebreakSelect) tiebreakSelect.value = cfg.tiebreak || 'dg';
+        if (autosaveToggle) autosaveToggle.checked = cfg.autosave !== false;
+
+        applyGlobalConfig(cfg);
+    }
+
+    // Attach event listeners for Config View UI controls
+    setTimeout(() => {
+        loadGlobalConfigUI();
+
+        const themeSelect = document.getElementById('config-theme-select');
+        const starsToggle = document.getElementById('config-stars-toggle');
+        const confettiToggle = document.getElementById('config-confetti-toggle');
+        const pointsWinSelect = document.getElementById('config-points-win');
+        const tiebreakSelect = document.getElementById('config-tiebreak-select');
+        const autosaveToggle = document.getElementById('config-autosave-toggle');
+
+        const updateCfgFromUI = () => {
+            const cfg = {
+                theme: themeSelect ? themeSelect.value : 'stadium',
+                stars: starsToggle ? starsToggle.checked : true,
+                confetti: confettiToggle ? confettiToggle.checked : true,
+                pointsWin: pointsWinSelect ? parseInt(pointsWinSelect.value) : 3,
+                tiebreak: tiebreakSelect ? tiebreakSelect.value : 'dg',
+                autosave: autosaveToggle ? autosaveToggle.checked : true
+            };
+            saveGlobalConfig(cfg);
+            showToast('Configuración guardada ⚙️✅');
+        };
+
+        if (themeSelect) themeSelect.addEventListener('change', updateCfgFromUI);
+        if (starsToggle) starsToggle.addEventListener('change', updateCfgFromUI);
+        if (confettiToggle) confettiToggle.addEventListener('change', updateCfgFromUI);
+        if (pointsWinSelect) pointsWinSelect.addEventListener('change', updateCfgFromUI);
+        if (tiebreakSelect) tiebreakSelect.addEventListener('change', updateCfgFromUI);
+        if (autosaveToggle) autosaveToggle.addEventListener('change', updateCfgFromUI);
+
+        // Export All Data Backup (JSON)
+        const btnExportAll = document.getElementById('btn-export-all-data');
+        if (btnExportAll) {
+            btnExportAll.addEventListener('click', () => {
+                const storedData = localStorage.getItem('torneos-fc-data') || '[]';
+                const customParticipants = localStorage.getItem('torneos-fc-participants-list') || '[]';
+                const globalConfig = localStorage.getItem('torneos-fc-global-config') || '{}';
+
+                const backupObj = {
+                    appName: 'Torneos FC Backup',
+                    version: '2.0',
+                    exportDate: new Date().toLocaleString(),
+                    tournaments: JSON.parse(storedData),
+                    participants: JSON.parse(customParticipants),
+                    config: JSON.parse(globalConfig)
+                };
+
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = `torneos-fc-respaldo-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                showToast('Respaldo masivo exportado 📥✅');
+            });
+        }
+
+        // Import All Data Backup (JSON)
+        const btnImportAll = document.getElementById('btn-import-all-data');
+        const inputImportBackup = document.getElementById('input-import-backup');
+
+        if (btnImportAll && inputImportBackup) {
+            btnImportAll.addEventListener('click', () => inputImportBackup.click());
+
+            inputImportBackup.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const parsed = JSON.parse(evt.target.result);
+                        if (parsed.tournaments && Array.isArray(parsed.tournaments)) {
+                            localStorage.setItem('torneos-fc-data', JSON.stringify(parsed.tournaments));
+                            if (parsed.participants && Array.isArray(parsed.participants)) {
+                                localStorage.setItem('torneos-fc-participants-list', JSON.stringify(parsed.participants));
+                            }
+                            if (parsed.config) {
+                                localStorage.setItem('torneos-fc-global-config', JSON.stringify(parsed.config));
+                                applyGlobalConfig(parsed.config);
+                            }
+                            showToast('Respaldo masivo restaurado con éxito 📤✅');
+                            setTimeout(() => window.location.reload(), 1200);
+                        } else {
+                            showToast('Archivo de respaldo no válido ⚠️');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Error al leer el archivo de respaldo ❌');
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        // Danger Zone: Reset All Data
+        const btnConfigReset = document.getElementById('btn-config-reset-all');
+        if (btnConfigReset) {
+            btnConfigReset.addEventListener('click', () => {
+                if (confirm('🚨 ¡ATENCIÓN! ¿Estás completamente seguro de borrar TODOS los torneos, participantes y configuraciones? Esta acción no se puede deshacer.')) {
+                    localStorage.removeItem('torneos-fc-data');
+                    localStorage.removeItem('torneos-fc-participants-list');
+                    localStorage.removeItem('torneos-fc-global-config');
+                    showToast('Todos los datos han sido borrados 🗑️');
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            });
+        }
+    }, 150);
 
     function calculateAndDrawStats() {
         const teamStats = {};

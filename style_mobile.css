@@ -2595,5 +2595,243 @@ body.theme-champions #bracket-view::before {
     font-weight: 600;
 }
 
+/* ==========================================================================
+   CONFIGURACIÓN GLOBAL
+   ========================================================================== */
+
+.config-sections-container {
+    max-width: 850px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.config-card {
+    background: rgba(11, 23, 48, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    transition: all 0.25s ease;
+}
+
+.config-card.danger-zone {
+    border-color: rgba(255, 77, 77, 0.4);
+    background: rgba(30, 10, 15, 0.7);
+}
+
+.config-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.config-card-icon {
+    font-size: 1.8rem;
+}
+
+.config-card-header h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+}
+
+.config-card-header p {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0.2rem 0 0 0;
+}
+
+.config-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.config-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.config-option label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.config-select {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+    min-width: 220px;
+}
+
+.config-toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    text-align: left;
+}
+
+.toggle-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.toggle-sub {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Switch Toggle UI */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: .3s;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+}
+
+input:checked + .slider {
+    background-color: #00F0FF;
+    border-color: #00F0FF;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+    background-color: #060B19;
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Action Rows & Buttons */
+.config-action-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-config-action {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    border-radius: 12px;
+    padding: 0.8rem 1.4rem;
+    color: #00F0FF;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.btn-config-action:hover {
+    background: #00F0FF;
+    color: #060B19;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+.danger-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.danger-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.btn-danger-reset {
+    background: #ff4d4d;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.7rem 1.4rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+    transition: all 0.2s ease;
+}
+
+.btn-danger-reset:hover {
+    background: #ff3333;
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(255, 77, 77, 0.7);
+}
+
+/* THEMES OVERRIDES */
+body.theme-neon {
+    --bg-color-main: #040914;
+    --primary-color: #00F0FF;
+}
+
+body.theme-gold {
+    --bg-color-main: #140d04;
+    --primary-color: #FFD700;
+}
+
+body.theme-dark {
+    --bg-color-main: #000000;
+    --primary-color: #00F0FF;
+}
+
 
 

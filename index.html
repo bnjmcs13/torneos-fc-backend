@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=22">
+    <link rel="stylesheet" href="style_mobile.css?v=23">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -422,6 +422,138 @@
             </div>
         </section>
 
+        <!-- Vista de Configuración Global -->
+        <section id="config-view" class="view">
+            <header>
+                <h1 class="champions-title">CONFIGURACIÓN GLOBAL</h1>
+                <p>Personaliza tu experiencia, reglas de juego y gestión de datos</p>
+            </header>
+
+            <div class="config-sections-container">
+                <!-- 1. Apariencia y Tema -->
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <span class="config-card-icon">🎨</span>
+                        <div>
+                            <h3>Apariencia y Tema Visual</h3>
+                            <p>Elige el estilo y ambiente de la interfaz</p>
+                        </div>
+                    </div>
+                    <div class="config-card-body">
+                        <div class="config-option">
+                            <label for="config-theme-select">Tema de Color:</label>
+                            <select id="config-theme-select" class="config-select">
+                                <option value="stadium">🏟️ Estadio Nocturno (Predeterminado)</option>
+                                <option value="neon">⚡ Cian Neón / Champions</option>
+                                <option value="gold">🏆 Oro Dorado Premium</option>
+                                <option value="dark">🌙 Oscuro Puro / OLED</option>
+                            </select>
+                        </div>
+                        <div class="config-toggle-option">
+                            <div class="toggle-text">
+                                <span class="toggle-title">Fondo de Estrellas Animado</span>
+                                <span class="toggle-sub">Muestra partículas de estrellas brillantes en el fondo</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="config-stars-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="config-toggle-option">
+                            <div class="toggle-text">
+                                <span class="toggle-title">Animación de Confeti</span>
+                                <span class="toggle-sub">Lluvia de confeti al consagrar un campeón o guardar partido</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="config-confetti-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Preferencias de Torneo y Reglas -->
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <span class="config-card-icon">⚽</span>
+                        <div>
+                            <h3>Preferencias de Torneo</h3>
+                            <p>Configura las reglas predeterminadas para nuevos torneos</p>
+                        </div>
+                    </div>
+                    <div class="config-card-body">
+                        <div class="config-option">
+                            <label for="config-points-win">Puntos por Victoria (Modo Liga):</label>
+                            <select id="config-points-win" class="config-select">
+                                <option value="3">3 Puntos (Estándar)</option>
+                                <option value="2">2 Puntos (Tradicional)</option>
+                            </select>
+                        </div>
+                        <div class="config-option">
+                            <label for="config-tiebreak-select">Primer Criterio de Desempate en Tabla:</label>
+                            <select id="config-tiebreak-select" class="config-select">
+                                <option value="dg">Diferencia de Goles (DG)</option>
+                                <option value="gf">Goles a Favor (GF)</option>
+                                <option value="direct">Resultado Directo</option>
+                            </select>
+                        </div>
+                        <div class="config-toggle-option">
+                            <div class="toggle-text">
+                                <span class="toggle-title">Auto-Guardado en Vivo</span>
+                                <span class="toggle-sub">Guarda automáticamente el estado al ingresar marcadores</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="config-autosave-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Gestión de Datos y Copias de Seguridad -->
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <span class="config-card-icon">💾</span>
+                        <div>
+                            <h3>Copia de Seguridad y Datos</h3>
+                            <p>Exporta o restaura toda tu información de Torneos FC</p>
+                        </div>
+                    </div>
+                    <div class="config-card-body">
+                        <div class="config-action-row">
+                            <button id="btn-export-all-data" class="btn-config-action">
+                                <span>📥 Exportar Respaldo Masivo (JSON)</span>
+                            </button>
+                            <button id="btn-import-all-data" class="btn-config-action">
+                                <span>📤 Restaurar Respaldo Masivo</span>
+                            </button>
+                            <input type="file" id="input-import-backup" accept=".json" style="display:none;" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Zona de Peligro -->
+                <div class="config-card danger-zone">
+                    <div class="config-card-header">
+                        <span class="config-card-icon">⚠️</span>
+                        <div>
+                            <h3 style="color:#ff4d4d;">Zona de Peligro</h3>
+                            <p>Acciones irreversibles sobre tus datos almacenados</p>
+                        </div>
+                    </div>
+                    <div class="config-card-body">
+                        <div class="danger-box">
+                            <div class="danger-info">
+                                <strong style="color:#ff4d4d; font-size:0.95rem;">Restablecer Torneos FC</strong>
+                                <span style="color:#94a3b8; font-size:0.85rem;">Se borrarán todos los torneos guardados, participantes e historial.</span>
+                            </div>
+                            <button id="btn-config-reset-all" class="btn-danger-reset">Borrar Todo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Vista de Torneos Guardados -->
         <section id="saved-view" class="view">
             <header>
@@ -565,6 +697,6 @@
         }
     </script>
 
-    <script src="app.js?v=22"></script>
+    <script src="app.js?v=23"></script>
 </body>
 </html>
