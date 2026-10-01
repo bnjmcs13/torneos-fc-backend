@@ -562,6 +562,26 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdownMenu.classList.remove('show');
     });
 
+    // Sidebar Navigation Listeners
+    const navHome = document.getElementById('nav-home');
+    const navSaved = document.getElementById('nav-saved');
+    const navTeams = document.getElementById('nav-teams');
+    const navRanking = document.getElementById('nav-ranking');
+    const navConfig = document.getElementById('nav-config');
+    const navSupport = document.getElementById('nav-support');
+
+    function setActiveNavItem(activeBtn) {
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    if (navHome) navHome.addEventListener('click', () => { setActiveNavItem(navHome); viewHistory.length = 0; showView(homeView, false); });
+    if (navSaved) navSaved.addEventListener('click', () => { setActiveNavItem(navSaved); renderSavedTournaments(); showView(savedView, true); });
+    if (navTeams) navTeams.addEventListener('click', () => { setActiveNavItem(navTeams); showView(setupView, true); });
+    if (navRanking) navRanking.addEventListener('click', () => { setActiveNavItem(navRanking); calculateAndDrawStats(); showView(statsView, true); });
+    if (navConfig) navConfig.addEventListener('click', () => { setActiveNavItem(navConfig); showView(setupView, true); });
+    if (navSupport) navSupport.addEventListener('click', () => { openInfoModal('champions-format'); });
+
     btnMenuReset.addEventListener('click', () => {
         if (confirm('¿Estás seguro de reiniciar todos los datos? Se borrará todo el progreso actual.')) {
             window.location.reload();

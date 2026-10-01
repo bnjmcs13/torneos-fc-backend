@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=20">
+    <link rel="stylesheet" href="style_mobile.css?v=21">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -50,8 +50,54 @@
     </div>
 
 
+    <!-- Sidebar Navegación Lateral -->
+    <aside class="sidebar-nav" id="sidebar-nav">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">TORNEOS FC</div>
+        </div>
+        <nav class="sidebar-menu">
+            <button class="nav-item active" id="nav-home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Inicio</span>
+            </button>
+            <button class="nav-item" id="nav-saved">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-label">Mis Torneos</span>
+            </button>
+            <button class="nav-item" id="nav-teams">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Equipos</span>
+            </button>
+            <button class="nav-item" id="nav-ranking">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-label">Ranking</span>
+            </button>
+            <button class="nav-item" id="nav-config">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Configuración</span>
+            </button>
+            <button class="nav-item" id="nav-support">
+                <span class="nav-icon">❓</span>
+                <span class="nav-label">Soporte</span>
+            </button>
+        </nav>
+    </aside>
+
     <div class="container">
-        
+        <!-- Barra Superior de Usuario -->
+        <header class="top-user-bar">
+            <button class="top-bar-icon-btn" title="Notificaciones">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span class="notification-badge-dot"></span>
+            </button>
+            <button class="top-bar-icon-btn" title="Usuario">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+            <div class="user-profile-avatar" title="Mi Perfil">
+                <span class="avatar-fallback">👤</span>
+            </div>
+        </header>
+
         <!-- Vista de Inicio Principal -->
         <section id="home-view" class="view active hero-section stadium-bg">
             <div class="stadium-overlay"></div>
@@ -61,35 +107,73 @@
                     <p class="hero-subtitle">El camino hacia la gloria</p>
                 </div>
                 
-                <div id="hero-continue-container" class="hero-continue-container hidden">
-                    <button id="btn-hero-continue" class="btn-continue-last">
-                        <span class="pulse-dot"></span> Continuar Último: <strong id="continue-name">...</strong>
+                <!-- Continuar Último Card -->
+                <div id="hero-continue-container" class="hero-continue-wrapper hidden">
+                    <div class="continue-label-header">Continuar Último:</div>
+                    <div class="hero-continue-card">
+                        <div class="continue-left">
+                            <div class="continue-ring-spinner"></div>
+                            <div class="continue-pitch-badge">
+                                ⚽
+                            </div>
+                            <div class="continue-info-text">
+                                <span class="continue-title">Estado del Torneo</span>
+                                <span class="continue-sub" id="continue-name">...</span>
+                            </div>
+                        </div>
+                        <button id="btn-hero-continue" class="btn-cyan-continue">CONTINUAR</button>
+                    </div>
+                </div>
+
+                <!-- Botón Principal: CREAR TORNEO -->
+                <div class="hero-main-action">
+                    <button id="btn-create-tournament" class="btn-metallic-hero">
+                        <span>CREAR TORNEO</span>
+                        <span class="plus-badge">⊕</span>
                     </button>
                 </div>
 
-                <div class="hero-actions">
-                    <button id="btn-create-tournament" class="btn-primary hero-btn">Crear Torneo</button>
-                    <button id="btn-join-tournament" class="btn-secondary hero-btn" style="border-color: #00F0FF; color: #00F0FF;">Unirse a Torneo</button>
-                    <button id="btn-import-file" class="btn-secondary hero-btn" style="border-color: #10B981; color: #10B981; background: rgba(16, 185, 129, 0.1); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);">📥 Cargar desde Archivo</button>
+                <!-- Fila de 3 Tarjetas de Acción Centrales -->
+                <div class="hero-middle-grid">
+                    <button id="btn-join-tournament" class="action-card-btn">
+                        <span class="action-icon cyan">👥</span>
+                        <span>Unirse a Torneo</span>
+                    </button>
+                    <button id="btn-import-file" class="action-card-btn">
+                        <span class="action-icon green">📁</span>
+                        <span>Cargar desde Archivo</span>
+                    </button>
                     <input type="file" id="input-import-file" accept=".json,.html" class="hidden" style="display:none;" />
-                    <button id="btn-hero-saved" class="btn-secondary hero-btn-secondary">Torneos Guardados</button>
-                    <button id="btn-hero-install" class="btn-primary hero-btn hidden" style="background: linear-gradient(135deg, #00F0FF, #0080FF); box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);">
-                        <span class="f-icon">📱</span> Instalar App
+                    <button id="btn-hero-saved" class="action-card-btn">
+                        <span class="action-icon purple">🛢️</span>
+                        <span>Torneos Guardados</span>
                     </button>
                 </div>
 
-                <div class="hero-features">
-                    <div class="feature-card">
+                <!-- Botón INSTALAR APP -->
+                <div class="hero-install-wrapper">
+                    <button id="btn-hero-install" class="btn-hero-install-metallic hidden">
+                        <span class="install-icon">📥</span>
+                        <div class="install-text-col">
+                            <span class="install-title">INSTALAR APP</span>
+                            <span class="install-sub">Descargar Aplicación Móvil</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Tarjetas Inferiores -->
+                <div class="hero-bottom-features">
+                    <div class="bottom-feature-card">
                         <span class="f-icon">⚙️</span>
-                        <span>Configuración<br>Total</span>
+                        <span>Configuración Global</span>
                     </div>
-                    <div class="feature-card">
+                    <div class="bottom-feature-card">
                         <span class="f-icon">🏆</span>
-                        <span>Múltiples<br>Formatos</span>
+                        <span>Formatos</span>
                     </div>
-                    <div class="feature-card">
+                    <div class="bottom-feature-card">
                         <span class="f-icon">💾</span>
-                        <span>Guardado<br>Local</span>
+                        <span>Guardado Local</span>
                     </div>
                 </div>
             </div>
@@ -460,6 +544,6 @@
         }
     </script>
 
-    <script src="app.js?v=20"></script>
+    <script src="app.js?v=21"></script>
 </body>
 </html>

@@ -1955,5 +1955,411 @@ body.theme-champions #bracket-view::before {
     }
 }
 
+/* ==========================================================================
+   NUEVO DISEÑO DASHBOARD (MATCH REFERENCE UI)
+   ========================================================================== */
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    width: 230px;
+    background: #070d1e;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-logo {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #ffffff;
+    padding: 0.5rem 0.8rem;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: transparent;
+    border: none;
+    color: #8c9ba5;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.nav-item.active {
+    background: rgba(0, 240, 255, 0.12);
+    color: #00F0FF;
+    border-left: 3px solid #00F0FF;
+}
+
+.nav-icon {
+    font-size: 1.1rem;
+}
+
+/* Top User Header Bar */
+.top-user-bar {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    z-index: 90;
+}
+
+.top-bar-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(13, 24, 48, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #d4daec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.top-bar-icon-btn:hover {
+    border-color: #00F0FF;
+    color: #00F0FF;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.notification-badge-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4d4d;
+    box-shadow: 0 0 6px #ff4d4d;
+}
+
+.user-profile-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00F0FF, #0070F3);
+    padding: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #101d36;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* Continuar Último Card */
+.hero-continue-wrapper {
+    width: 100%;
+    max-width: 750px;
+    margin: 0 auto 2rem auto;
+    text-align: left;
+}
+
+.continue-label-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+.hero-continue-card {
+    background: rgba(11, 23, 48, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    border-radius: 16px;
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(0, 240, 255, 0.15);
+}
+
+.continue-left {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.continue-ring-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 240, 255, 0.2);
+    border-top-color: #00F0FF;
+    border-radius: 50%;
+    animation: continue-spin 1.2s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes continue-spin {
+    to { transform: rotate(360deg); }
+}
+
+.continue-pitch-badge {
+    width: 38px;
+    height: 38px;
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.continue-info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.continue-title {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #ffffff;
+}
+
+.continue-sub {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.btn-cyan-continue {
+    background: #00F0FF;
+    color: #060B19;
+    font-weight: 900;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    padding: 0.65rem 1.6rem;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.btn-cyan-continue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
+}
+
+/* Metallic Hero Button: CREAR TORNEO */
+.hero-main-action {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.btn-metallic-hero {
+    background: linear-gradient(180deg, #9bb5d0 0%, #4a749b 50%, #203a56 100%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 35px;
+    padding: 0.95rem 3.5rem;
+    font-size: 1.25rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-metallic-hero:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.plus-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+/* Middle Row Cards */
+.hero-middle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+}
+
+.action-card-btn {
+    background: rgba(11, 23, 48, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 16px;
+    padding: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-card-btn:hover {
+    border-color: #00F0FF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.25);
+}
+
+.action-icon {
+    font-size: 1.4rem;
+}
+
+/* Install App Button */
+.hero-install-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+
+.btn-hero-install-metallic {
+    background: linear-gradient(180deg, rgba(20, 45, 80, 0.85) 0%, rgba(10, 22, 45, 0.95) 100%);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    border-radius: 20px;
+    padding: 0.8rem 2.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-hero-install-metallic:hover {
+    border-color: #00F0FF;
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+}
+
+.install-icon {
+    font-size: 1.8rem;
+}
+
+.install-text-col {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.install-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+.install-sub {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Bottom Features */
+.hero-bottom-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    max-width: 750px;
+    margin: 0 auto;
+}
+
+.bottom-feature-card {
+    background: rgba(8, 16, 36, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Responsive Media Query adjustment for desktop vs mobile */
+@media (min-width: 992px) {
+    .container {
+        margin-left: 230px !important;
+        max-width: calc(100% - 230px) !important;
+        padding: 2.5rem 3rem !important;
+    }
+    .hamburger-menu {
+        display: none !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .sidebar-nav {
+        transform: translateX(-100%);
+    }
+    .sidebar-nav.active {
+        transform: translateX(0);
+    }
+    .hero-middle-grid, .hero-bottom-features {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 
