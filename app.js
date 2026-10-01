@@ -1724,6 +1724,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDouble = state.knockoutFormat === 'double';
         const isBestOf3 = state.knockoutFormat === 'best_of_3';
 
+        const w1 = getIndividualMatchWinner(m.s1, m.s2, m.p1_1, m.p2_1);
+        const w2 = getIndividualMatchWinner(m.s1_v, m.s2_v, m.p1_2, m.p2_2);
+        const showP3 = isBestOf3 && !((w1 === 1 && w2 === 1) || (w1 === 2 && w2 === 2));
+
         let showPenalties = !isBestOf3 && (isTie || m.p1 !== null || m.p2 !== null);
 
         let html = `
@@ -1757,6 +1761,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_2" value="${m.p1_2 !== null ? m.p1_2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
                     </div>
                     ` : ''}
+                    ${showP3 ? `
                     <div class="score-box">
                         <label>P3</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s1_m3" value="${m.s1_m3 !== null ? m.s1_m3 : ''}" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
@@ -1766,6 +1771,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p1_3" value="${m.p1_3 !== null ? m.p1_3 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t1 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
                     </div>
+                    ` : ''}
                     ` : ''}
                     ` : ''}
                     ${showPenalties ? `
@@ -1807,6 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_2" value="${m.p2_2 !== null ? m.p2_2 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
                     </div>
                     ` : ''}
+                    ${showP3 ? `
                     <div class="score-box">
                         <label>P3</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="s2_m3" value="${m.s2_m3 !== null ? m.s2_m3 : ''}" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71;"' : ''}>
@@ -1816,6 +1823,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label style="color:#FFD700">PEN</label>
                         <input type="number" min="0" data-r="${rIdx}" data-m="${mIdx}" data-t="p2_3" value="${m.p2_3 !== null ? m.p2_3 : ''}" style="color:#FFD700; border-color:#FFD700;" ${!m.t2 ? 'disabled' : ''} ${m.isFinished ? 'style="border-color:#2ecc71; color:#2ecc71;"' : ''}>
                     </div>
+                    ` : ''}
                     ` : ''}
                     ` : ''}
                     ${showPenalties ? `
@@ -2091,6 +2099,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (match.s1_m3 === null || match.s2_m3 === null || parseInt(match.s1_m3) !== parseInt(match.s2_m3)) {
                     match.p1_3 = null; match.p2_3 = null;
+                }
+                if (state.knockoutFormat === 'best_of_3') {
+                    const w1 = getIndividualMatchWinner(match.s1, match.s2, match.p1_1, match.p2_1);
+                    const w2 = getIndividualMatchWinner(match.s1_v, match.s2_v, match.p1_2, match.p2_2);
+                    if ((w1 === 1 && w2 === 1) || (w1 === 2 && w2 === 2)) {
+                        match.s1_m3 = null; match.s2_m3 = null;
+                        match.p1_3 = null; match.p2_3 = null;
+                    }
                 }
                 if (type.startsWith('s') && val === null) {
                     match.p1 = null; match.p2 = null;
