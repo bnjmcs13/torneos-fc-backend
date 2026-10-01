@@ -3632,6 +3632,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title: '🎨 Selección de Liga (Temática)',
             desc: 'Aplica los colores, nombres y zonas reales de clasificación internacional o descenso a la tabla de posiciones.\n\n• Ligas Europeas: Destaca zonas de Champions League, Europa League y Conference League.\n• Ligas Sudamericanas: Destaca zonas de Copa Libertadores, Sudamericana y Descenso.\n• MLS: Destaca zona de clasificación a playoffs.',
             example: 'En la Premier League, los puestos 1° al 4° de la tabla se colorean en azul celestito (Zona Champions League) y los últimos 3 en rojo (Zona Descenso).'
+        },
+        'wildcards': {
+            title: '🃏 Cupos Comodín (Mejores Siguientes)',
+            desc: 'Son cupos extra de clasificación que se otorgan a los mejores equipos que NO alcanzaron a clasificar de forma directa en sus grupos.\n\n• La app compara el rendimiento de todos los posicionados en los siguientes puestos (ej. 3ros o 4tos lugares) y rescata a los mejores por puntos, diferencia de gol y goles a favor para completar los cupos requeridos en la eliminatoria.',
+            example: 'En un torneo con 3 grupos donde avanzan 2 directos por grupo (6 clasificados), agregas 2 Cupos Comodín para rescatar a los 2 "Mejores Terceros" de todo el torneo. Así completas 8 clasificados para los Cuartos de Final.'
         }
     };
 
