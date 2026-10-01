@@ -827,89 +827,57 @@ document.addEventListener('DOMContentLoaded', () => {
         let qualified = [];
         if (cfg.rule === 'direct' || cfg.rule === 'triangular') return [];
 
-        if (cfg.rule === 'custom') {
-            groupTables.forEach(table => {
-                for(let i=0; i<Math.min(cfg.topN, table.length); i++) {
-                    let t = {...table[i]};
-                    t.qualType = 'direct';
-                    qualified.push(t);
-                }
-            });
-            
-            if (cfg.bestCount > 0) {
-                let remainingNeeded = cfg.bestCount;
-                let currentLayer = cfg.topN; // Start checking right below direct qualifiers
-
-                while (remainingNeeded > 0) {
-                    let layerTeams = [];
-                    groupTables.forEach(table => {
-                        if (table.length > currentLayer) {
-                            layerTeams.push(table[currentLayer]);
-                        }
-                    });
-
-                    if (layerTeams.length === 0) break; // Exhausted all teams
-
-                    layerTeams.sort((a,b) => {
-                         if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
-                         if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
-                         return b.gfAvg - a.gfAvg;
-                    });
-
-                    let takeCount = Math.min(remainingNeeded, layerTeams.length);
-                    const best = layerTeams.slice(0, takeCount).map(t => ({...t, qualType: 'wildcard'}));
-                    qualified = [...qualified, ...best];
-                    
-                    remainingNeeded -= takeCount;
-                    currentLayer++;
-                }
-            }
-            return qualified;
-        }
-
-        if (cfg.rule === 'top2' || cfg.rule === 'top1_each') {
-            const topN = cfg.rule === 'top2' ? 2 : 1;
-            groupTables.forEach(table => {
-                 for(let i=0; i<Math.min(topN, table.length); i++) {
-                     let t = {...table[i]};
-                     t.qualType = 'direct';
-                     qualified.push(t);
-                 }
-            });
-        }
-
-        if (cfg.rule === 'top1_and_best_2nds') {
-            let seconds = [];
-            groupTables.forEach(table => {
-                if(table.length > 0) {
-                    let t = {...table[0]};
-                    t.qualType = 'direct';
-                    qualified.push(t);
-                }
-                if(table.length > 1) {
-                    seconds.push(table[1]);
-                }
-            });
-            seconds.sort((a,b) => {
-                 if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
-                 if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
-                 return b.gfAvg - a.gfAvg;
-            });
-            const bestSeconds = seconds.slice(0, cfg.bestCount).map(t => ({...t, qualType: 'wildcard'}));
-            qualified = [...qualified, ...bestSeconds];
-        }
-
         if (cfg.rule === 'best_overall') {
             let allTeams = [];
             groupTables.forEach(table => allTeams.push(...table));
             allTeams.sort((a,b) => {
+                 if (b.pts !== a.pts) return b.pts - a.pts;
                  if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
+                 if (b.dg !== a.dg) return b.dg - a.dg;
                  if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
-                 return b.gfAvg - a.gfAvg;
+                 if (b.gf !== a.gf) return b.gf - a.gf;
+                 return b.w - a.w;
             });
             qualified = allTeams.slice(0, cfg.target).map(t => ({...t, qualType: 'wildcard'}));
+            return qualified;
         }
+
+        // Layer-by-layer seeding:
+        // Capa 0: Todos los 1° lugares de grupo (ordenados entre sí por puntos/DG/GF/W) -> Sembrados 1 al G
+        // Capa 1: Todos los 2° lugares de grupo (ordenados entre sí por puntos/DG/GF/W) -> Sembrados G+1 al 2G
+        // Capa 2: Comodines / 3° lugares (ordenados entre sí) -> Sembrados 2G+1 al N
+        const topN = (cfg.rule === 'top2' ? 2 : (cfg.rule === 'top1_each' ? 1 : (cfg.rule === 'top1_and_best_2nds' ? 1 : (cfg.topN || 2))));
         
+        let currentLayer = 0;
+        while (qualified.length < cfg.target) {
+            let layerTeams = [];
+            groupTables.forEach(table => {
+                if (table.length > currentLayer) {
+                    layerTeams.push(table[currentLayer]);
+                }
+            });
+
+            if (layerTeams.length === 0) break; // Sin más equipos
+
+            layerTeams.sort((a, b) => {
+                 if (b.pts !== a.pts) return b.pts - a.pts;
+                 if (b.ptsAvg !== a.ptsAvg) return b.ptsAvg - a.ptsAvg;
+                 if (b.dg !== a.dg) return b.dg - a.dg;
+                 if (b.dgAvg !== a.dgAvg) return b.dgAvg - a.dgAvg;
+                 if (b.gf !== a.gf) return b.gf - a.gf;
+                 return b.w - a.w;
+            });
+
+            const qualType = currentLayer < topN ? 'direct' : 'wildcard';
+            for (let t of layerTeams) {
+                if (qualified.length < cfg.target) {
+                    qualified.push({...t, qualType});
+                }
+            }
+
+            currentLayer++;
+        }
+
         return qualified;
     }
 
@@ -1579,13 +1547,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (qualified.length !== targetSize) {
             qualified = qualified.slice(0, targetSize);
         }
-        
-        // Final ranking to seed the bracket optimally
-        qualified.sort((a, b) => {
-             if (b.pts !== a.pts) return b.pts - a.pts;
-             if (b.dg !== a.dg) return b.dg - a.dg;
-             return b.gf - a.gf;
-        });
 
         state.bracketRounds = [];
         
@@ -3393,13 +3354,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (topTeams.length !== targetSize) {
                 topTeams = topTeams.slice(0, targetSize);
             }
-            
-            // Sort optimally for bracket seeding
-            topTeams.sort((a, b) => {
-                 if (b.pts !== a.pts) return b.pts - a.pts;
-                 if (b.dg !== a.dg) return b.dg - a.dg;
-                 return b.gf - a.gf;
-            });
         }
         
         state.bracketRounds = [];
