@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="style_mobile.css?v=23">
+    <link rel="stylesheet" href="style_mobile.css?v=24">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -284,6 +284,14 @@
                         <div id="league-schedule-info-banner" style="margin-top: 0.5rem; padding: 0.6rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 6px; font-size: 0.8rem; color: #00F0FF; text-align: left; line-height: 1.4;"></div>
                     </div>
                     <div class="input-group" style="margin-top: 1rem;">
+                        <label for="league-tiebreak-select">Primer Criterio de Desempate en Tabla: <button type="button" class="btn-info-icon" data-info="tiebreak" title="Ver explicación">ℹ️</button></label>
+                        <select id="league-tiebreak-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
+                            <option value="dg" selected>Diferencia de Goles (DG)</option>
+                            <option value="gf">Goles a Favor (GF)</option>
+                            <option value="direct">Resultado Directo</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="margin-top: 1rem;">
                         <label>Selección de Liga (Temática):</label>
                         <select id="league-theme-select" class="form-select" style="width:100%; border-color: rgba(255,255,255,0.2);">
                             <option value="brasileirao">Brasileirão (Brasil)</option>
@@ -489,14 +497,6 @@
                                 <option value="2">2 Puntos (Tradicional)</option>
                             </select>
                         </div>
-                        <div class="config-option">
-                            <label for="config-tiebreak-select">Primer Criterio de Desempate en Tabla:</label>
-                            <select id="config-tiebreak-select" class="config-select">
-                                <option value="dg">Diferencia de Goles (DG)</option>
-                                <option value="gf">Goles a Favor (GF)</option>
-                                <option value="direct">Resultado Directo</option>
-                            </select>
-                        </div>
                         <div class="config-toggle-option">
                             <div class="toggle-text">
                                 <span class="toggle-title">Auto-Guardado en Vivo</span>
@@ -697,6 +697,6 @@
         }
     </script>
 
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=24"></script>
 </body>
 </html>

@@ -929,8 +929,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (state.format === 'liga') {
             const leaguePlayoffsSelect = document.getElementById('league-playoffs-select');
             const leaguePlayoffsQtySelect = document.getElementById('league-playoffs-qty-select');
+            const leagueTiebreakSelect = document.getElementById('league-tiebreak-select');
             state.leaguePlayoffFormat = leaguePlayoffsSelect ? leaguePlayoffsSelect.value : 'none';
             state.leaguePlayoffQty = leaguePlayoffsQtySelect ? parseInt(leaguePlayoffsQtySelect.value) : 4;
+            state.leagueTiebreak = leagueTiebreakSelect ? leagueTiebreakSelect.value : 'dg';
             state.bracketFormatType = state.leaguePlayoffFormat;
         }
 
@@ -1036,8 +1038,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const leagueScheduleSelect = document.getElementById('league-schedule-select');
             const leagueThemeSelect = document.getElementById('league-theme-select');
+            const leagueTiebreakSelect = document.getElementById('league-tiebreak-select');
             state.leagueSchedule = leagueScheduleSelect ? leagueScheduleSelect.value : 'double';
             state.leagueTheme = leagueThemeSelect ? leagueThemeSelect.value : 'brasileirao';
+            state.leagueTiebreak = leagueTiebreakSelect ? leagueTiebreakSelect.value : 'dg';
 
             for (let i = 0; i < gCount; i++) {
                 const size = groupSizes[i];
@@ -1134,6 +1138,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
     }
 
+    function getHeadToHead(matches, idA, idB) {
+        let ptsA = 0, ptsB = 0;
+        let dgA = 0, dgB = 0;
+        let gfA = 0, gfB = 0;
+        let played = false;
+
+        matches.forEach(m => {
+            if (m.isFinished && m.s1 !== null && m.s2 !== null) {
+                const s1 = parseInt(m.s1);
+                const s2 = parseInt(m.s2);
+                if (m.t1 && m.t2) {
+                    if (m.t1.id === idA && m.t2.id === idB) {
+                        played = true;
+                        gfA += s1; gfB += s2;
+                        dgA += (s1 - s2); dgB += (s2 - s1);
+                        if (s1 > s2) ptsA += 3;
+                        else if (s2 > s1) ptsB += 3;
+                        else { ptsA += 1; ptsB += 1; }
+                    } else if (m.t1.id === idB && m.t2.id === idA) {
+                        played = true;
+                        gfB += s1; gfA += s2;
+                        dgB += (s1 - s2); dgA += (s2 - s1);
+                        if (s1 > s2) ptsB += 3;
+                        else if (s2 > s1) ptsA += 3;
+                        else { ptsB += 1; ptsA += 1; }
+                    }
+                }
+            }
+        });
+
+        if (!played) return 0;
+        if (ptsB !== ptsA) return ptsB - ptsA;
+        if (dgB !== dgA) return dgB - dgA;
+        if (gfB !== gfA) return gfB - gfA;
+        return 0;
+    }
+
     // Calculate Table for a group
     function getGroupTable(group) {
         const stats = {};
@@ -1159,6 +1200,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const tiebreakRule = state.leagueTiebreak || 'dg';
+
         return Object.values(stats).map(st => {
             st.dg = st.gf - st.gc;
             // Promedios para comparar posiciones entre grupos de distinto tamaño
@@ -1170,10 +1213,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }).sort((a, b) => {
             // 1. Puntos totales (quien tenga más puntos SIEMPRE va primero, sin importar PJ)
             if (b.pts !== a.pts) return b.pts - a.pts;
-            // 2. Mayor diferencia de goles (DG)
-            if (b.dg !== a.dg) return b.dg - a.dg;
-            // 3. Mayor cantidad de goles a favor (GF)
-            if (b.gf !== a.gf) return b.gf - a.gf;
+
+            if (tiebreakRule === 'gf') {
+                if (b.gf !== a.gf) return b.gf - a.gf;
+                if (b.dg !== a.dg) return b.dg - a.dg;
+            } else if (tiebreakRule === 'direct') {
+                const h2h = getHeadToHead(group.matches, a.id, b.id);
+                if (h2h !== 0) return h2h;
+                if (b.dg !== a.dg) return b.dg - a.dg;
+                if (b.gf !== a.gf) return b.gf - a.gf;
+            } else {
+                // 'dg' (predeterminado)
+                if (b.dg !== a.dg) return b.dg - a.dg;
+                if (b.gf !== a.gf) return b.gf - a.gf;
+            }
+
             // 4. Mayor cantidad de partidos ganados (G)
             if (b.w !== a.w) return b.w - a.w;
             // 5. Menor cantidad de partidos jugados (PJ) si están empatados en todo lo anterior
@@ -3016,14 +3070,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const starsToggle = document.getElementById('config-stars-toggle');
         const confettiToggle = document.getElementById('config-confetti-toggle');
         const pointsWinSelect = document.getElementById('config-points-win');
-        const tiebreakSelect = document.getElementById('config-tiebreak-select');
         const autosaveToggle = document.getElementById('config-autosave-toggle');
 
         if (themeSelect) themeSelect.value = cfg.theme || 'stadium';
         if (starsToggle) starsToggle.checked = cfg.stars !== false;
         if (confettiToggle) confettiToggle.checked = cfg.confetti !== false;
         if (pointsWinSelect) pointsWinSelect.value = cfg.pointsWin || 3;
-        if (tiebreakSelect) tiebreakSelect.value = cfg.tiebreak || 'dg';
         if (autosaveToggle) autosaveToggle.checked = cfg.autosave !== false;
 
         applyGlobalConfig(cfg);
@@ -3037,7 +3089,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const starsToggle = document.getElementById('config-stars-toggle');
         const confettiToggle = document.getElementById('config-confetti-toggle');
         const pointsWinSelect = document.getElementById('config-points-win');
-        const tiebreakSelect = document.getElementById('config-tiebreak-select');
         const autosaveToggle = document.getElementById('config-autosave-toggle');
 
         const updateCfgFromUI = () => {
@@ -3046,7 +3097,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 stars: starsToggle ? starsToggle.checked : true,
                 confetti: confettiToggle ? confettiToggle.checked : true,
                 pointsWin: pointsWinSelect ? parseInt(pointsWinSelect.value) : 3,
-                tiebreak: tiebreakSelect ? tiebreakSelect.value : 'dg',
                 autosave: autosaveToggle ? autosaveToggle.checked : true
             };
             saveGlobalConfig(cfg);
@@ -3057,7 +3107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (starsToggle) starsToggle.addEventListener('change', updateCfgFromUI);
         if (confettiToggle) confettiToggle.addEventListener('change', updateCfgFromUI);
         if (pointsWinSelect) pointsWinSelect.addEventListener('change', updateCfgFromUI);
-        if (tiebreakSelect) tiebreakSelect.addEventListener('change', updateCfgFromUI);
         if (autosaveToggle) autosaveToggle.addEventListener('change', updateCfgFromUI);
 
         // Export All Data Backup (JSON)
@@ -4240,6 +4289,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title: '🏆 Modo Liga',
             desc: 'Formato de todos contra todos en una única tabla general de posiciones. Sumas 3 puntos por victoria, 1 por empate y 0 por derrota.\n\n• Al finalizar todos los partidos, el jugador que acumule más puntos se corona Campeón (o los mejores avanzan a Playoffs si activas esa opción).',
             example: 'Si son 8 jugadores, cada uno disputará 7 partidos (o 14 si eliges Ida y Vuelta). Al terminar la liga, quien quede 1° lugar gana el torneo.'
+        },
+        'tiebreak': {
+            title: '⚖️ Criterio de Desempate en Tabla',
+            desc: 'Define cómo se desempatan las posiciones entre dos o más equipos que obtengan la misma cantidad de puntos en la tabla de la liga:\n\n• Diferencia de Goles (DG): Se posiciona primero el equipo con mayor diferencia entre goles a favor y goles en contra.\n\n• Goles a Favor (GF): Se posiciona primero el equipo con mayor cantidad total de goles anotados.\n\n• Resultado Directo: Se compara directamente el marcador/puntos de los enfrentamientos jugados entre los equipos empatados.',
+            example: 'Si Equipo A y Equipo B empatan en 10 puntos: con DG, un saldo de +5 le gana a +3. Con Resultado Directo, si Equipo A le ganó 2-1 a Equipo B, Equipo A queda arriba.'
         },
         'copa-format': {
             title: '⚔️ Copas y Llaves',
