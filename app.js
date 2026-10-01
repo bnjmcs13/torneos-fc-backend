@@ -3601,6 +3601,135 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // EXPLANATION DICTIONARY (Help & Explanations)
+    const INFO_EXPLANATIONS = {
+        'champions-format': {
+            title: '⭐ Champions League',
+            desc: 'Formato mixto que combina una Fase de Grupos seguida por una Fase Eliminatoria final (Playoffs).\n\n• Fase de Grupos: Los participantes se dividen en grupos y juegan todos contra todos dentro de su grupo.\n• Fase Eliminatoria: Los mejores clasificados de cada grupo avanzan a las llaves finales de eliminación directa.',
+            example: 'Si son 16 jugadores, se arman 4 grupos de 4 personas. Los 2 mejores de cada grupo (8 en total) clasifican a Cuartos de Final.'
+        },
+        'liga-format': {
+            title: '🏆 Modo Liga',
+            desc: 'Formato de todos contra todos en una única tabla general de posiciones. Sumas 3 puntos por victoria, 1 por empate y 0 por derrota.\n\n• Al finalizar todos los partidos, el jugador que acumule más puntos se corona Campeón (o los mejores avanzan a Playoffs si activas esa opción).',
+            example: 'Si son 8 jugadores, cada uno disputará 7 partidos (o 14 si eliges Ida y Vuelta). Al terminar la liga, quien quede 1° lugar gana el torneo.'
+        },
+        'copa-format': {
+            title: '⚔️ Copas y Llaves',
+            desc: 'Torneo de eliminación directa pura desde el primer partido (Muerte súbita).\n\n• Quien gana su partido avanza a la siguiente ronda.\n• Quien pierde queda eliminado del torneo inmediatamente.',
+            example: 'Con 8 jugadores se juegan Cuartos de Final (4 partidos). Los 4 ganadores pasan a Semifinales y los 2 vencedores disputan la Gran Final.'
+        },
+        'bracket-type': {
+            title: '⚔️ Formatos de Llaves Eliminatorias',
+            desc: 'Determina el tipo de estructura para las rondas finales:\n\n1. Eliminación Directa Estándar: Llave clásica donde el 1° de la tabla enfrenta al último clasificado (ej. 1° vs 8°, 2° vs 7°). Quien pierde queda fuera al instante.\n\n2. Winner + Loser Bracket (Ventaja al 1°): Formato de doble eliminación. Si pierdes tu primer partido NO quedas fuera, sino que caes al Repechaje (Loser Bracket) para intentar llegar a la final desde ahí. El 1° lugar de la fase previa recibe ventaja especial ingresando más tarde.',
+            example: 'En Winner + Loser Bracket, si pierdes tu primer partido en el Cuadro Principal, caes al Cuadro de Repechaje donde aún puedes ser campeón si ganas tus siguientes duelos.'
+        },
+        'match-schedule': {
+            title: '⚽ Modalidad de Partidos',
+            desc: 'Define la cantidad de encuentros por enfrentamiento:\n\n• Partido Único (Solo Ida): 1 solo partido directo. El ganador del partido gana la serie. En eliminatorias, si empatan se define por penales.\n\n• Ida y Vuelta: Se disputan 2 partidos seguidos por enfrentamiento (Ida y Vuelta). Se suman los goles globales acumulados en ambos encuentros.',
+            example: 'En Ida y Vuelta: Partido 1 quedas 2-1 y Partido 2 quedas 1-1. El marcador global es 3-2 a tu favor y clasificas.'
+        },
+        'league-theme': {
+            title: '🎨 Selección de Liga (Temática)',
+            desc: 'Aplica los colores, nombres y zonas reales de clasificación internacional o descenso a la tabla de posiciones.\n\n• Ligas Europeas: Destaca zonas de Champions League, Europa League y Conference League.\n• Ligas Sudamericanas: Destaca zonas de Copa Libertadores, Sudamericana y Descenso.\n• MLS: Destaca zona de clasificación a playoffs.',
+            example: 'En la Premier League, los puestos 1° al 4° de la tabla se colorean en azul celestito (Zona Champions League) y los últimos 3 en rojo (Zona Descenso).'
+        }
+    };
+
+    function openInfoModal(key) {
+        const info = INFO_EXPLANATIONS[key];
+        if (!info) return;
+
+        const modal = document.getElementById('info-modal');
+        const titleEl = document.getElementById('info-modal-title');
+        const descEl = document.getElementById('info-modal-desc');
+        const exampleEl = document.getElementById('info-modal-example');
+
+        if (modal && titleEl && descEl && exampleEl) {
+            titleEl.textContent = info.title;
+            descEl.innerText = info.desc;
+            exampleEl.textContent = info.example;
+            modal.classList.remove('hidden');
+        }
+    }
+
+    const infoModal = document.getElementById('info-modal');
+    const btnCloseInfo = document.getElementById('btn-close-info');
+    const btnCloseInfoX = document.getElementById('btn-close-info-x');
+    if (btnCloseInfo) btnCloseInfo.addEventListener('click', () => infoModal.classList.add('hidden'));
+    if (btnCloseInfoX) btnCloseInfoX.addEventListener('click', () => infoModal.classList.add('hidden'));
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-info-icon');
+        if (btn) {
+            e.stopPropagation();
+            const key = btn.getAttribute('data-info');
+            if (key) openInfoModal(key);
+        }
+    });
+
+    function updateDropdownInfoBanners() {
+        const champTypeSelect = document.getElementById('champions-type-select');
+        const champBanner = document.getElementById('champions-type-info-banner');
+        if (champTypeSelect && champBanner) {
+            if (champTypeSelect.value === 'advantage') {
+                champBanner.innerHTML = '👑 <strong>Winner + Loser Bracket:</strong> Los clasificados tienen doble oportunidad (Repechaje si pierdes). El 1° lugar tiene ventaja especial.';
+            } else {
+                champBanner.innerHTML = '⚔️ <strong>Eliminación Directa Estándar:</strong> El 1° enfrente al último clasificado (ej: 1° vs 8°). Quien pierde un partido queda eliminado.';
+            }
+        }
+
+        const copaSchedSelect = document.getElementById('copa-schedule-select');
+        const copaBanner = document.getElementById('copa-schedule-info-banner');
+        if (copaSchedSelect && copaBanner) {
+            if (copaSchedSelect.value === 'double') {
+                copaBanner.innerHTML = '🔄 <strong>Ida y Vuelta:</strong> Se juegan 2 partidos por serie. Avanza quien anote más goles en el acumulado global.';
+            } else {
+                copaBanner.innerHTML = '⚽ <strong>Partido Único:</strong> 1 solo enfrentamiento directo por serie. En caso de empate se define por penales.';
+            }
+        }
+
+        const leagueSchedSelect = document.getElementById('league-schedule-select');
+        const leagueBanner = document.getElementById('league-schedule-info-banner');
+        if (leagueSchedSelect && leagueBanner) {
+            if (leagueSchedSelect.value === 'double') {
+                leagueBanner.innerHTML = '🔄 <strong>Ida y Vuelta:</strong> Todos jugarán 2 veces contra cada rival de la liga (Local y Visitante).';
+            } else {
+                leagueBanner.innerHTML = '⚽ <strong>Solo Ida:</strong> 1 único enfrentamiento contra cada rival de la liga.';
+            }
+        }
+
+        const leagueThemeSelect = document.getElementById('league-theme-select');
+        const leagueThemeBanner = document.getElementById('league-theme-info-banner');
+        if (leagueThemeSelect && leagueThemeBanner) {
+            const val = leagueThemeSelect.value;
+            if (val === 'brasileirao' || val === 'argentina' || val === 'chile') {
+                leagueThemeBanner.innerHTML = '🏆 <strong>Temática Sudamericana:</strong> Destaca zonas para Copa Libertadores (Top 4), Pre-Libertadores, Sudamericana y Descenso.';
+            } else if (val === 'mls') {
+                leagueThemeBanner.innerHTML = '🇺🇸 <strong>Temática MLS:</strong> Destaca los mejores 7 puestos de la tabla.';
+            } else {
+                leagueThemeBanner.innerHTML = '🇪🇺 <strong>Temática Europea:</strong> Destaca zonas para UEFA Champions League (Top 4), Europa League y Conference League.';
+            }
+        }
+
+        const leaguePlayoffsSelect = document.getElementById('league-playoffs-select');
+        const leaguePlayoffsBanner = document.getElementById('league-playoffs-info-banner');
+        if (leaguePlayoffsSelect && leaguePlayoffsBanner) {
+            if (leaguePlayoffsSelect.value === 'advantage') {
+                leaguePlayoffsBanner.innerHTML = '👑 <strong>Playoffs Doble Eliminación:</strong> Los mejores de la liga juegan Winner + Loser Bracket con ventaja al 1°.';
+            } else if (leaguePlayoffsSelect.value === 'direct') {
+                leaguePlayoffsBanner.innerHTML = '⚔️ <strong>Playoffs Eliminación Directa:</strong> Al terminar la liga, el 1° enfrente al último clasificado (ej: 1° vs 8°). Muerte súbita.';
+            } else {
+                leaguePlayoffsBanner.innerHTML = '📊 <strong>Sin Playoffs:</strong> El Campeón será directamente quien quede en 1° lugar en la tabla al finalizar los partidos.';
+            }
+        }
+    }
+
+    ['champions-type-select', 'copa-schedule-select', 'league-schedule-select', 'league-theme-select', 'league-playoffs-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', updateDropdownInfoBanners);
+    });
+    updateDropdownInfoBanners();
+
     // Ejecutar comprobación en segundo plano tras inicializar la app
     setTimeout(checkAutoJoinUrl, 200);
 

@@ -235,6 +235,30 @@ button {
     color: white;
 }
 
+/* Interactive Info Icon Button */
+.btn-info-icon {
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    color: #00F0FF;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+    vertical-align: middle;
+}
+.btn-info-icon:hover {
+    background: #00F0FF;
+    color: #000;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
 .hidden { display: none !important; }
 
 /* Share Code Badge */
