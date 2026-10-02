@@ -2762,14 +2762,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.querySelectorAll('.btn-danger').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const id = e.target.getAttribute('data-delete-id');
-                window.deleteTournament(id);
+                const target = e.target.closest('[data-delete-id]');
+                if (target) {
+                    const id = target.getAttribute('data-delete-id');
+                    window.deleteTournament(id);
+                }
             });
         });
         container.querySelectorAll('.btn-load').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const id = e.target.getAttribute('data-load-id');
-                window.loadTournament(id);
+                const target = e.target.closest('[data-load-id]');
+                if (target) {
+                    const id = target.getAttribute('data-load-id');
+                    window.loadTournament(id);
+                }
             });
         });
     }
@@ -2902,36 +2908,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let html = '';
         filtered.forEach(p => {
-            const formatNames = Array.from(p.formats).map(f => {
-                if (f === 'champions') return 'Champions';
-                if (f === 'liga') return 'Liga';
-                if (f === 'copa') return 'Copa';
-                return f;
-            }).join(', ') || 'General';
-
             html += `
                 <div class="team-participant-card">
-                    <div class="card-header-row">
-                        <div class="participant-avatar-circle">${p.name.charAt(0).toUpperCase()}</div>
-                        <div class="participant-info-col">
-                            <span class="participant-name-title">${p.name}</span>
-                            ${p.titlesTotal > 0 ? `<span class="participant-badge-tag">👑 ${p.titlesTotal} Título${p.titlesTotal === 1 ? '' : 's'}</span>` : `<span class="participant-badge-tag" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.2); color:#94a3b8;">👤 Jugador</span>`}
-                        </div>
-                    </div>
-                    <div class="card-stats-body">
-                        <div class="stat-item-cell">
-                            <span class="stat-item-label">Torneos Jugados</span>
-                            <span class="stat-item-val">${p.playedCount}</span>
-                        </div>
-                        <div class="stat-item-cell">
-                            <span class="stat-item-label">Títulos</span>
-                            <span class="stat-item-val" style="color:${p.titlesTotal > 0 ? '#FFD700' : '#ffffff'};">${p.titlesTotal}</span>
-                        </div>
-                        <div class="stat-item-cell" style="grid-column: 1 / -1; margin-top: 0.3rem;">
-                            <span class="stat-item-label">Formatos Disputados</span>
-                            <span class="stat-item-val" style="font-size: 0.8rem; color: #00F0FF;">${formatNames}</span>
-                        </div>
-                    </div>
+                    <div class="participant-avatar-circle">${p.name.charAt(0).toUpperCase()}</div>
+                    <span class="participant-name-title">${p.name}</span>
                 </div>
             `;
         });
@@ -3321,14 +3301,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.deleteTournament = function(id) {
+        if (!id) return;
         if (!confirm('¿Estás seguro de eliminar este torneo guardado?')) return;
         let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');
-        stored = stored.filter(t => t.id !== id);
+        stored = stored.filter(t => String(t.id) !== String(id));
         localStorage.setItem('torneos-fc-data', JSON.stringify(stored));
-        window.renderSavedTournaments();
-        initHome();
+        
+        if (state && String(state.id) === String(id)) {
+            for (let key in state) delete state[key];
+        }
+
+        if (typeof window.renderSavedTournaments === 'function') {
+            window.renderSavedTournaments();
+        }
+        if (typeof initHome === 'function') {
+            initHome();
+        }
         showToast('Torneo eliminado 🗑️');
-    }
+    };
 
     window.loadTournament = async function(id) {
         let stored = JSON.parse(localStorage.getItem('torneos-fc-data') || '[]');

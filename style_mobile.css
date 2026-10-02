@@ -2124,8 +2124,8 @@ body.theme-champions #bracket-view::before {
 
 .teams-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
     max-width: 1000px;
     margin: 0 auto;
 }
@@ -2134,13 +2134,14 @@ body.theme-champions #bracket-view::before {
     background: rgba(11, 23, 48, 0.75);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(0, 240, 255, 0.2);
-    border-radius: 16px;
-    padding: 1.25rem;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
     display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
     transition: all 0.25s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .team-participant-card:hover {
